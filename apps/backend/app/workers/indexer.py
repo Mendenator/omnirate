@@ -19,7 +19,13 @@ from sqlalchemy import select
 from app.core.config import get_settings
 from app.db.session import async_session_factory
 from app.domain.models import Entity, Review
+from app.domain.poe import counts_as_verified
+from app.domain.scoring import ScoredReview, compute_bayesian_trimmed_score
 from app.search.client import ENTITIES_ALIAS, ensure_entities_index, get_opensearch_client
+from app.search.mongolian_text import build_name_folded
+
+CATEGORY_PRIOR_MEAN = 3.5  # placeholder until S-08's gold set gives a real per-category prior
+CATEGORY_PRIOR_CONFIDENCE = 10.0
 
 
 async def reindex_entity(ctx, entity_id: str) -> None:
@@ -31,18 +37,28 @@ async def reindex_entity(ctx, entity_id: str) -> None:
             return
 
         reviews = (await db.execute(select(Review).where(Review.entity_id == entity.id))).scalars().all()
-        n_verified = sum(1 for r in reviews if r.poe_level in ("L2", "L3", "L4"))
-        avg_score = sum(float(r.overall_score) for r in reviews) / len(reviews) if reviews else 0.0
+        n_verified = sum(1 for r in reviews if counts_as_verified(r.poe_level))
+        score = compute_bayesian_trimmed_score(
+            [
+                ScoredReview(overall_score=float(r.overall_score), poe_level=r.poe_level, fraud_score=float(r.fraud_score))
+                for r in reviews
+            ],
+            prior_mean=CATEGORY_PRIOR_MEAN,
+            prior_confidence=CATEGORY_PRIOR_CONFIDENCE,
+        )
 
         doc = {
             "entity_id": str(entity.id),
             "branch_slug": entity.branch_slug,
             "category_slug": entity.category_slug,
             "name": entity.name,
+            "name_folded": build_name_folded(entity.name),
+            "name_translit": entity.name,  # translit is query-side (S-05); indexed name stays canonical Cyrillic
+            "name_edge": entity.name,
             "location_slug": entity.location_slug,
             "location": {"lat": float(entity.lat), "lon": float(entity.lon)} if entity.lat and entity.lon else None,
             "attributes": entity.attributes,
-            "score": avg_score,
+            "score": score,
             "n_verified": n_verified,
             "updated_at": datetime.now(UTC).isoformat(),
         }

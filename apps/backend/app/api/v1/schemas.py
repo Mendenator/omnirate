@@ -8,6 +8,7 @@ class EntityCreateRequest(BaseModel):
     category_slug: str
     schema_version: int
     name: str
+    ttd: str | None = None
     location_slug: str | None = None
     lat: float | None = None
     lon: float | None = None
@@ -20,6 +21,7 @@ class EntityResponse(BaseModel):
     category_slug: str
     schema_version: int
     name: str
+    ttd: str | None
     location_slug: str | None
     attributes: dict
     verified: bool

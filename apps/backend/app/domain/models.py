@@ -66,6 +66,7 @@ class Entity(Base):
     category_slug: Mapped[str] = mapped_column(String(128), nullable=False)
     schema_version: Mapped[int] = mapped_column(nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    ttd: Mapped[str | None] = mapped_column(String(32))  # taxpayer registration no., for e-barimt TTD match (P1-01)
     location_slug: Mapped[str | None] = mapped_column(String(255))
     lat: Mapped[float | None] = mapped_column(Numeric(9, 6))
     lon: Mapped[float | None] = mapped_column(Numeric(9, 6))
@@ -92,6 +93,8 @@ class Review(Base):
     criteria_scores: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     body: Mapped[str | None] = mapped_column(String(4000))
     fraud_score: Mapped[float] = mapped_column(Numeric(4, 3), nullable=False, default=0)
+    owner_reply_body: Mapped[str | None] = mapped_column(String(2000))
+    owner_reply_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     entity: Mapped[Entity] = relationship(back_populates="reviews")
@@ -126,6 +129,55 @@ class IdempotencyKey(Base):
     response_status: Mapped[int] = mapped_column(nullable=False)
     response_body: Mapped[dict] = mapped_column(JSONB, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class EBarimtReceipt(Base):
+    """P1-01: one row per verified e-barimt receipt. `ddtd` UNIQUE enforces
+    "ДДТД UNIQUE" (a receipt can back exactly one review, no replay)."""
+
+    __tablename__ = "e_barimt_receipts"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    review_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False)
+    ddtd: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    ttd: Mapped[str] = mapped_column(String(32), nullable=False)
+    amount: Mapped[float] = mapped_column(Numeric(14, 2), nullable=False)
+    purchased_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class EntityOwner(Base):
+    """P1-13: an owner claim is only inserted once the submitted TTD matches
+    the entity's registered TTD — mismatches are rejected in the API layer
+    before a row is ever written (acceptance: 100% of TTD-mismatched claims
+    rejected)."""
+
+    __tablename__ = "entity_owners"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("entities.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    claimed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (UniqueConstraint("entity_id", name="uq_entity_owners_entity"),)
+
+
+class Complaint(Base):
+    __tablename__ = "complaints"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    reporter_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    target_type: Mapped[str] = mapped_column(String(32), nullable=False)  # review | entity
+    target_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    reason: Mapped[str] = mapped_column(String(64), nullable=False)
+    details: Mapped[str | None] = mapped_column(String(2000))
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="open")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint("target_type IN ('review', 'entity')", name="ck_complaints_target_type"),
+        CheckConstraint("status IN ('open', 'reviewing', 'resolved', 'dismissed')", name="ck_complaints_status"),
+    )
 
 
 class AuditLog(Base):

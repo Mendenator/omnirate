@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     dan_token_url: str = "http://localhost:8080/mock-dan/token"
     dan_use_mock: bool = True
 
+    # e-barimt QR verification. ⛔ production access requires a tax-authority
+    # API agreement — dev/stage point at a local mock (see app/core/e_barimt.py).
+    e_barimt_use_mock: bool = True
+    e_barimt_verify_url: str = "http://localhost:8080/mock-e-barimt/verify"
+    e_barimt_max_receipt_age_days: int = 90
+
+    uploads_bucket: str = "omnirate-dev-uploads"
+    uploads_max_bytes: int = 10 * 1024 * 1024
+
     otel_exporter_endpoint: str | None = None
     sentry_dsn: str | None = None
 

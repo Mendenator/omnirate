@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,6 +16,7 @@ _ROUTE = "POST /api/v1/reviews"
 @router.post("", response_model=ReviewResponse, status_code=201)
 async def create_review(
     req: ReviewCreateRequest,
+    request: Request,
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
     db: AsyncSession = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
@@ -48,4 +49,9 @@ async def create_review(
     await db.refresh(review)
     response = ReviewResponse.model_validate(review).model_dump(mode="json")
     await store_response(db, key=idempotency_key, route=_ROUTE, status=201, body=response)
+
+    arq_pool = getattr(request.app.state, "arq_pool", None)
+    if arq_pool is not None:
+        await arq_pool.enqueue_job("moderate_review", str(review.id), _queue_name="arq:queue:moderation")
+
     return review
