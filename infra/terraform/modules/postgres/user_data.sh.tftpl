@@ -1,0 +1,31 @@
+#!/bin/bash
+set -euo pipefail
+
+# P0-02 acceptance: env from scratch in ≤30min. Docker pull + wal-g restore
+# base backup are the two long poles; both are logged with timestamps so a
+# regression is easy to spot in CloudWatch.
+dnf install -y docker
+systemctl enable --now docker
+
+docker pull ${image_repo}:${environment}-latest
+
+mkdir -p /var/lib/omnirate-postgres /etc/omnirate/wal-g
+
+docker run -d --name omnirate-postgres \
+  --restart unless-stopped \
+  -e POSTGRES_USER=omnirate \
+  -e POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password \
+  -v /var/lib/omnirate-postgres:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  ${image_repo}:${environment}-latest
+
+# WAL-G continuous archiving -> S3 (module.storage `postgres_wal_archive` bucket).
+# PITR restore drill (P0-02 acceptance, RTO <=30min):
+#   wal-g backup-fetch /var/lib/omnirate-postgres LATEST
+#   wal-g wal-replay --until <timestamp>
+cat > /etc/omnirate/wal-g/config.json <<EOF
+{
+  "WALG_S3_PREFIX": "s3://omnirate-${environment}-postgres-wal",
+  "PGDATA": "/var/lib/omnirate-postgres"
+}
+EOF

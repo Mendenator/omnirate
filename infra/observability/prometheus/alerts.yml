@@ -1,0 +1,44 @@
+groups:
+  - name: omnirate-slo
+    rules:
+      # P0-03 acceptance: p95 > 250ms sustained 5min -> alert (maps to K1: POST /reviews).
+      - alert: ReviewsWriteLatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_server_duration_seconds_bucket{http_route="/api/v1/reviews"}[5m])) by (le)
+          ) > 0.25
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: "POST /reviews p95 latency above 250ms for 5m (K1 breach)"
+
+      - alert: EntityReadLatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_server_duration_seconds_bucket{http_route="/api/v1/entities/{entity_id}"}[5m])) by (le)
+          ) > 0.12
+        for: 5m
+        labels:
+          severity: warn
+        annotations:
+          summary: "Entity read p95 latency above 120ms for 5m (K2 breach)"
+
+      - alert: SearchLatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_server_duration_seconds_bucket{http_route="/api/v1/search"}[5m])) by (le)
+          ) > 0.15
+        for: 5m
+        labels:
+          severity: warn
+        annotations:
+          summary: "Search p95 latency above 150ms for 5m (K9 breach)"
+
+      - alert: CdcIndexLagHigh
+        expr: omnirate_cdc_index_lag_seconds_p95 > 60
+        for: 5m
+        labels:
+          severity: warn
+        annotations:
+          summary: "CDC → OpenSearch index lag p95 above 60s (K13 breach)"

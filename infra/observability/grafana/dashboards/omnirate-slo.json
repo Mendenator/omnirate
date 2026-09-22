@@ -1,0 +1,65 @@
+{
+  "title": "OmniRate — SLO (K1-K15)",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "K1: POST /reviews p95 (target ≤250ms)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_duration_seconds_bucket{http_route=\"/api/v1/reviews\"}[5m])) by (le))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "K2: Entity read p95 (target ≤120ms cache hit)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_duration_seconds_bucket{http_route=\"/api/v1/entities/{entity_id}\"}[5m])) by (le))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "K8: Autocomplete p95 (target ≤80ms)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_duration_seconds_bucket{http_route=\"/api/v1/search/autocomplete\"}[5m])) by (le))"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "K9: Search results p95 (target ≤150ms @500RPS)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_duration_seconds_bucket{http_route=\"/api/v1/search\"}[5m])) by (le))"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "K13: CDC index lag p95 (target ≤60s)",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 16 },
+      "targets": [{ "expr": "omnirate_cdc_index_lag_seconds_p95" }]
+    },
+    {
+      "type": "stat",
+      "title": "K11: Zero-result search rate (target ≤3%)",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 16 },
+      "targets": [{ "expr": "omnirate_search_zero_result_ratio" }]
+    },
+    {
+      "type": "stat",
+      "title": "Rate-limited requests (429/min) by route",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 16 },
+      "targets": [{ "expr": "sum(rate(http_server_requests_total{status=\"429\"}[1m])) by (http_route)" }]
+    }
+  ]
+}

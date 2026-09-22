@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Definition of Done (SOW §3.2): CI must complete in ≤10 min.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: omnirate
+          POSTGRES_PASSWORD: omnirate
+          POSTGRES_DB: omnirate
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U omnirate" --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+
+    defaults:
+      run:
+        working-directory: apps/backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Type check (mypy)
+        run: mypy app
+
+      # pg_jsonschema isn't in the stock postgis image used for the CI service
+      # container, so the attribute-validation trigger test runs against a
+      # schema-less DB here and is covered for real in the docker-compose
+      # integration profile (see infra/postgres/Dockerfile).
+      - name: Test
+        env:
+          OMNIRATE_DATABASE_URL: postgresql+asyncpg://omnirate:omnirate@localhost:5432/omnirate
+          OMNIRATE_REDIS_URL: redis://localhost:6379/0
+        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+
+      - name: Build image
+        run: docker build -t omnirate-backend:${{ github.sha }} .
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: false # enabled once apps/web has a package.json (P0-09/P0-10)
+    steps:
+      - run: echo "web CI pending P0-09/P0-10"

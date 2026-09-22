@@ -1,0 +1,58 @@
+name: Deploy (stage)
+
+# P0-01 acceptance: PR merge to main -> stage deploy in ≤10 min.
+#
+# ⛔ STUB: pushing the image to GHCR is real; the actual rollout step
+# (`kubectl set image` / `terraform apply -target=stage`) needs a live stage
+# cluster + credentials (KUBE_CONFIG_STAGE / cloud OIDC role) that don't exist
+# yet — see docs/PROGRESS.md. Everything up to that point runs today.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/backend/**"
+      - ".github/workflows/deploy-stage.yml"
+
+concurrency:
+  group: deploy-stage
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        run: echo "image=ghcr.io/${{ github.repository }}/backend:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/backend
+          push: true
+          tags: ${{ steps.meta.outputs.image }}
+
+  rollout-stage:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    environment: stage
+    steps:
+      - name: Rollout (stub — needs stage cluster credentials)
+        run: |
+          echo "TODO(external): kubectl --context stage set image deployment/omnirate-backend api=${{ needs.build-and-push.outputs.image }}"
+          echo "Blocked on: stage cluster provisioning (infra/terraform/environments/stage) + KUBE_CONFIG_STAGE secret."
