@@ -5,11 +5,12 @@ from redis.asyncio import Redis
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
-from app.core.observability import configure_logging, configure_tracing
+from app.core.observability import configure_logging, configure_sentry, configure_tracing
 from app.core.rate_limit import RateLimitMiddleware
 from app.search.client import ensure_entities_index, get_opensearch_client
 
 configure_logging()
+configure_sentry()
 settings = get_settings()
 
 app = FastAPI(title="OmniRate API", version="0.1.0")

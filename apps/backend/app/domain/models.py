@@ -39,6 +39,7 @@ class User(Base):
     rd_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     poe_level: Mapped[str] = mapped_column(String(2), nullable=False, default="L0")
+    khoroo_slug: Mapped[str | None] = mapped_column(String(64))  # registered address, for P3-02 jurisdiction_match
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (CheckConstraint(f"poe_level IN {POE_LEVELS}", name="ck_users_poe_level"),)
@@ -97,6 +98,8 @@ class Review(Base):
     fraud_score: Mapped[float] = mapped_column(Numeric(4, 3), nullable=False, default=0)
     owner_reply_body: Mapped[str | None] = mapped_column(String(2000))
     owner_reply_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    is_blocked: Mapped[bool] = mapped_column(nullable=False, default=False)  # P3-04: strict_defamation, etc.
+    blocked_reason: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     entity: Mapped[Entity] = relationship(back_populates="reviews")
@@ -281,6 +284,64 @@ class ModerationDecision(Base):
     __table_args__ = (
         UniqueConstraint("case_id", "moderator_id", name="uq_moderation_decisions_case_moderator"),
         CheckConstraint("verdict IN ('approve','reject')", name="ck_moderation_decisions_verdict"),
+    )
+
+
+class DistrictMapping(Base):
+    """P3-01: хороо -> тойрог, versioned like schema_registry_entries — a new
+    version is a new set of rows, never an in-place update of an existing one."""
+
+    __tablename__ = "district_mappings"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    khoroo_slug: Mapped[str] = mapped_column(String(64), nullable=False)
+    tovrog_slug: Mapped[str] = mapped_column(String(64), nullable=False)
+    version: Mapped[int] = mapped_column(nullable=False)
+    imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (UniqueConstraint("khoroo_slug", "version", name="uq_district_mappings_khoroo_version"),)
+
+
+class PoliticianAttendance(Base):
+    """P3-03: objective, externally-sourced attendance data — deliberately
+    separate from `entities.attributes` (which is self-reported/admin-edited)
+    so a moderation dispute over a review can never touch this table, and
+    vice versa: a bad import can't corrupt entity attributes."""
+
+    __tablename__ = "politician_attendance"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("entities.id", ondelete="CASCADE"), nullable=False)
+    period: Mapped[str] = mapped_column(String(16), nullable=False)  # e.g. "2026-Q3"
+    attendance_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False)
+    source_url: Mapped[str] = mapped_column(String(512), nullable=False)
+    imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (UniqueConstraint("entity_id", "period", name="uq_politician_attendance_entity_period"),)
+
+
+class TakedownRequest(Base):
+    """P3-05/P3-06: notice-and-takedown, both user and law-enforcement
+    requesters share this table — see app/domain/takedown.py for why."""
+
+    __tablename__ = "takedown_requests"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    requester_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    requester_type: Mapped[str] = mapped_column(String(16), nullable=False)
+    target_type: Mapped[str] = mapped_column(String(16), nullable=False)
+    target_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    reason: Mapped[str] = mapped_column(String(2000), nullable=False)
+    case_reference: Mapped[str | None] = mapped_column(String(255))  # law-enforcement case/badge number
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="open")
+    sla_deadline: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint("requester_type IN ('user','law_enforcement')", name="ck_takedown_requester_type"),
+        CheckConstraint("target_type IN ('review','entity')", name="ck_takedown_target_type"),
+        CheckConstraint("status IN ('open','reviewing','resolved','rejected')", name="ck_takedown_status"),
     )
 
 

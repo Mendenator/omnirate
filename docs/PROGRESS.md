@@ -80,6 +80,26 @@
 | S-16 | Usability тест 1-р шат | ⛔ | 20 бодит хэрэглэгч шаардана — код биш |
 | S-17 | Ranking-ийн эсрэг манипуляц | ✅ | `tests/test_ranking_anti_manipulation.py` — P1-09-ийн fraud-score шүүлт S-17 шаардлагыг хангахыг баталгаажуулна |
 
+## P3 — Улс төрийн хаалттай бета
+
+| ID | Даалгавар | Төлөв | Тэмдэглэл |
+|---|---|---|---|
+| P3-01 | Хороо → тойргийн mapping, хувилбартай импорт | ✅ | `app/domain/jurisdiction.py`, `district_mappings` хүснэгт |
+| P3-02 | jurisdiction_match ба тусгаарласан оноо | ✅ | `app/domain/political_scoring.py` |
+| P3-03 | Улс төрчийн schema + ирцийн импорт | ✅ бүтэц / ⛔ эх сурвалж | `app/domain/attendance_import.py`, `app/core/attendance_source.py` — SOW-ийн өөрийнх нь тэмдэглэсэн "Өгөгдлийн эх сурвалж" хамаарал шийдэгдээгүй |
+| P3-04 | strict_defamation moderation горим | ✅ | `app/domain/defamation.py`, `app/workers/moderation.py`-д нэгтгэсэн |
+| P3-05 | Notice-and-takedown, SLA таймер, hash-chain audit | ✅ | `app/domain/takedown.py`, `app/api/v1/takedown.py` — audit chain P0-06-ийн `app/domain/audit.py` дээр суурилсан |
+| P3-06 | Хууль сахиулах байгууллагын портал | ✅ | `/api/v1/law-enforcement-requests` — 4ц SLA; **анхаар**: жинхэнэ role-based auth хараахан бэхлэгдээгүй |
+| P3-07 | Сарын ил тод байдлын тайлан | ✅ | `app/analytics/transparency_report.py` |
+| P3-08 | Moderator сургалт, playbook | ⛔ | Бодит сургалт/шалгалт — код биш |
+| P3-09 | Хуульчийн эцсийн хяналт | ⛔ | Монгол хуульч шаардана |
+| P3-10 | Хаалттай бета: 2 тойрог, 1,000 хэрэглэгч | ⛔ | Бодит хэрэглэгч татах — код биш |
+| P3-11 | Load test: 1,000 RPS унших, 200 RPS бичих | ✅ | P0-13-ийн `infra/loadtest/k6/` (K1, K2 аль хэдийн хамрагдсан) |
+| P3-12 | DR дасгал | ✅ runbook+script / ⛔ гүйцэтгэл | `infra/dr/dr_drill.md`, `measure_rpo_rto.py` — бодит AWS орчинд ажиллуулаагүй |
+| S-18 | Төрийн албаны хайлт: тойргоор үзэх, төвийг сахисан эрэмбэ | ✅ жагсаалт / 🚧 газрын зураг | `app/api/v1/political_search.py`, `apps/web/app/tur-alba/` — бодит choropleth зураг GeoJSON эх сурвалж дутуу тул жагсаалт хэлбэрээр |
+| S-19 | Хайлтын load test 500 RPS + failover | ✅ | `infra/loadtest/k6/search_failover_load_test.js` |
+| S-20 | Эцсийн usability + WCAG аудит | ✅ автомат хэсэг / ⛔ хүний тест | `apps/web/e2e/accessibility.spec.ts` (axe-core) — бодит 20 хэрэглэгчийн usability тест хийгдээгүй |
+
 ## Баталгаажуулалтын хязгаарлалт (энэ орчинд)
 
 Энэ орчинд Docker болон сүлжээний хандалт байхгүй тул дараах зүйлсийг **бичсэн боловч бодитоор ажиллуулж шалгаагүй**:
@@ -93,17 +113,27 @@ Python синтаксийг `py_compile`-аар шалгасан (алдаагү
 
 ## Дараагийн алхам
 
-P3 (Улс төрийн хаалттай бета) — хороо→тойрог mapping, jurisdiction score, strict_defamation moderation, notice-and-takedown, hash-chain audit (аль хэдийн `app/domain/audit.py`-д суурь нь бэлэн), DR дасгал. `OmniRate SOW v2.md` §6-г үз. Мөн P1/P2 дотор хийгдээгүй үлдсэн зүйлс: S-12 (SEO), S-13 (хайлтын аналитик), P1-16/P2-14 (пилот/red-team), P1-18 (pentest), S-16 (usability).
+**SOW-ийн 4 үе шат (P0–P3) бүгд код түвшинд хэрэгжсэн.** Одоо үлдсэн зүйлс нь код бичих ажил биш, харин:
+
+1. `npm install` / `uv sync` хийж бодит орчинд (docker-compose) шалгах — эхний "жинхэнэ" ажиллуулалт энд болно, тул алдаа (import, migration дараалал, semver зөрчил) гарах магадлалтай.
+2. Гадаад хамаарлууд шийдэгдэх (доор жагсаасан).
+3. Хийгдээгүй үлдсэн жижиг зүйлс: S-12 (SEO — sitemap/schema.org), S-13 (хайлтын CTR/zero-result dashboard тусад нь), S-18-ийн бодит choropleth газрын зураг.
+4. Хуулийн болон аюулгүй байдлын эцсийн шалгалт (P1-18 pentest, P3-09 хуульчийн дүгнэлт) — үүнгүйгээр production-д гарахгүй.
 
 ## Гадаад хамаарлын жагсаалт (энэ кодоор шийдэгдэхгүй)
 
 1. **ДАН гэрээ** — OAuth2 client_id/secret, sandbox эрх авахгүйгээр P0-07-г L1(OTP)-оос цааш production-д ашиглах боломжгүй.
 2. **e-barimt API эрх** — P1-01-ийг production горимд ажиллуулахад шаардлагатай.
-3. **Хуульч** — DPIA, зөвшөөрлийн текст, moderation policy-г батлуулах (PM+EXT).
+3. **Хуульч** — DPIA, зөвшөөрлийн текст, moderation policy, P3-09 эцсийн хяналт батлуулах (PM+EXT).
 4. **Pentester** — OWASP ASVS L2 pentest (P1-18).
 5. **Тэмдэглэгчид** — 15,000 moderation дээж, gold set (P0-12, S-08).
-6. **Бодит хэрэглэгчид** — card sorting/tree test (S-01), usability тест (K12, S-16, S-20), red-team (K4/K5, P2-14).
+6. **Бодит хэрэглэгчид** — card sorting/tree test (S-01), usability тест (K12, S-16, S-20), red-team (K4/K5, P2-14), хаалттай бета 1,000 хэрэглэгч (P3-10), moderator сургалт (P3-08).
 7. **PaddleOCR/XLM-R/e5 загвар** — P1-03/P1-08/P2-10 interface бэлэн, гэхдээ бодит загвар татаж (HuggingFace) эсвэл P0-12-ийн өгөгдөл дээр сургах шаардлагатай.
 8. **`npm install`/`pip install`** — энэ орчинд сүлжээ/registry хандалт байхгүй тул хийгдээгүй; Node/Python dependency-үүд tsconfig/pyproject-д зарлагдсан ч суулгаагүй.
+9. **LLM moderation endpoint** — P2-05 нь бодит Anthropic/OpenAI API түлхүүр тохируулаагүй.
+10. **LightGBM fraud загвар** — синтетик өгөгдөр дээр AUC>0.9 батлагдсан ч бодит SOW acceptance зөвхөн бодит fraud/normal өгөгдөр дээр дахин сургаж баталгаажна.
+11. **Ирцийн (P3-03) эх сурвалж** — SOW өөрөө "Өгөгдлийн эх сурвалж" гэж тодорхойгүй үлдээсэн; тодорхой засгийн газрын open-data API сонгогдоогүй.
+12. **Role-based auth** — moderator/law-enforcement эрхийн систем (P2-12, P3-06) одоогоор аль ч аутентификациятай хэрэглэгчид нээлттэй; production-д гарахаас өмнө заавал битүүлэх ёстой (P3 admin-hardening даалгавар, SOW-д тусад нь дурдагдаагүй ч зайлшгүй).
+13. **Choropleth газрын зураг** (S-18) — тойргийн GeoJSON хилийн өгөгдөл олдоогүй тул жагсаалт хэлбэрээр орлуулсан.
 9. **LLM moderation endpoint** — P2-05 нь бодит Anthropic/OpenAI API түлхүүр тохируулаагүй тул одоогоор бүх borderline кейс `needs_human_review`-д унана (аюулгүй fallback, гэхдээ P2-12 багийн ачааллыг нэмэгдүүлнэ).
 10. **LightGBM fraud загвар** — код бүрэн ажиллаж, синтетик өгөгдөр дээр AUC>0.9 баталгаажсан ч бодит SOW-ийн AUC≥0.93 acceptance зөвхөн бодит fraud/normal өгөгдөр дээр дахин сургаж баталгаажуулна.

@@ -55,6 +55,12 @@ class Settings(BaseSettings):
     database_url_psycopg: str = "postgresql://omnirate:omnirate@localhost:5432/omnirate"
     analytics_bucket: str = "omnirate-dev-analytics"
 
+    # P3-03: attendance/objective-data source. No specific government API has
+    # been identified yet (SOW's own dependency note, not just this repo's).
+    attendance_source_url: str | None = None
+    takedown_default_sla_hours: int = 72
+    law_enforcement_sla_hours: int = 4
+
     otel_exporter_endpoint: str | None = None
     sentry_dsn: str | None = None
 

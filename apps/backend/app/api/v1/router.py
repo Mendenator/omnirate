@@ -6,9 +6,11 @@ from app.api.v1.entities import router as entities_router
 from app.api.v1.hospital_qr import router as hospital_qr_router
 from app.api.v1.moderation_queue import router as moderation_queue_router
 from app.api.v1.ownership import router as ownership_router
+from app.api.v1.political_search import router as political_search_router
 from app.api.v1.poe_evidence import router as poe_evidence_router
 from app.api.v1.reviews import router as reviews_router
 from app.api.v1.search import router as search_router
+from app.api.v1.takedown import router as takedown_router
 from app.api.v1.uploads import router as uploads_router
 from app.schema_registry.router import router as schema_registry_router
 
@@ -23,4 +25,6 @@ api_router.include_router(uploads_router)
 api_router.include_router(search_router)
 api_router.include_router(hospital_qr_router)
 api_router.include_router(moderation_queue_router)
+api_router.include_router(takedown_router)
+api_router.include_router(political_search_router)
 api_router.include_router(schema_registry_router)

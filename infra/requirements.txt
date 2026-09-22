@@ -1,0 +1,6 @@
+# Standalone ops scripts (infra/loadtest/generate_test_data.py,
+# infra/dr/measure_rpo_rto.py, infra/search-eval/run_ndcg_eval.py) run
+# outside the apps/backend package and its asyncpg-based pyproject.toml —
+# they're plain psycopg2/httpx scripts invoked from a runbook or CI step.
+psycopg2-binary>=2.9
+httpx>=0.27

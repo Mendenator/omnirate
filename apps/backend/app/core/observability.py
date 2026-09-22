@@ -1,7 +1,12 @@
-"""OTel tracing + structlog wiring. Satisfies P0-03 (OTel, Grafana-ready metrics)."""
+"""OTel tracing + structlog + Sentry wiring. Satisfies P0-03 (OTel, Grafana-ready
+metrics, Sentry) and backs P3-03's "алдаа alert-тэй" import-job requirement —
+any uncaught exception in a cron job (attendance import, analytics export)
+reaches Sentry the same way an API request error would.
+"""
 
 import logging
 
+import sentry_sdk
 import structlog
 from fastapi import FastAPI
 from opentelemetry import trace
@@ -12,6 +17,12 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from app.core.config import get_settings
+
+
+def configure_sentry() -> None:
+    settings = get_settings()
+    if settings.sentry_dsn:
+        sentry_sdk.init(dsn=settings.sentry_dsn, environment=settings.env, traces_sample_rate=0.1)
 
 
 def configure_logging() -> None:

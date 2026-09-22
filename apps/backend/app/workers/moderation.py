@@ -14,22 +14,46 @@ from arq.connections import RedisSettings
 from app.core.config import get_settings
 from app.db.session import async_session_factory
 from app.domain.audit import append_audit_log
-from app.domain.models import Review
+from app.domain.defamation import check_strict_defamation
+from app.domain.models import Entity, Review
 from app.domain.moderation import redact_pii
 
 DLQ_KEY = "moderation:dlq"
 MODERATION_QUEUE_NAME = "moderation"
 
+# strict_defamation (P3-04) applies only to political-branch entities — the
+# heightened bar for unsourced criminal allegations isn't appropriate for a
+# restaurant review.
+STRICT_DEFAMATION_BRANCH = "tur-alba"
+
 
 async def moderate_review(ctx, review_id: str) -> dict:
     """Idempotent: re-running on an already-clean body is a no-op (redact_pii
-    on text with no PII returns the input unchanged), so at-least-once
-    delivery from arq's retry semantics can't double-redact.
+    on text with no PII returns the input unchanged, and a review already
+    blocked stays blocked), so at-least-once delivery from arq's retry
+    semantics can't double-redact or un-block anything.
     """
     async with async_session_factory() as db:
         review = await db.get(Review, uuid.UUID(review_id))
         if review is None:
             return {"status": "skipped", "reason": "review deleted before moderation ran"}
+
+        entity = await db.get(Entity, review.entity_id)
+        if entity is not None and entity.branch_slug == STRICT_DEFAMATION_BRANCH and review.body:
+            defamation_check = check_strict_defamation(review.body)
+            if defamation_check.is_blocked:
+                review.is_blocked = True
+                review.blocked_reason = defamation_check.reason
+                await append_audit_log(
+                    db,
+                    actor_id=None,
+                    action="moderation.strict_defamation_block",
+                    target_type="review",
+                    target_id=review_id,
+                    payload={"reason": defamation_check.reason},
+                )
+                await db.commit()
+                return {"status": "blocked", "reason": defamation_check.reason}
 
         findings = []
         if review.body:

@@ -1,0 +1,25 @@
+{
+  "category_slug": "uikh-gishuun",
+  "version": 1,
+  "json_schema": {
+    "type": "object",
+    "properties": {
+      "tovrog_slug": { "type": "string" },
+      "party": { "type": "string" },
+      "term_start": { "type": "string", "format": "date" },
+      "term_end": { "type": "string", "format": "date" }
+    },
+    "required": ["tovrog_slug"]
+  },
+  "search": {
+    "facets": [
+      { "field": "tovrog_slug", "type": "multi", "label_mn": "Тойрог", "order": 1 },
+      { "field": "party", "type": "multi", "label_mn": "Нам", "order": 2 }
+    ],
+    "default_sort": "jurisdiction"
+  },
+  "display": {
+    "sections": ["summary", "criteria_breakdown", "reviews", "attributes", "owner_reply"]
+  },
+  "_comment": "P3-03: attendance (ирц) is intentionally NOT a schema attribute — it's objective, externally-sourced data stored in politician_attendance (app/domain/models.py), not a self-reported entity field. See docs/PROGRESS.md for the attendance data source dependency."
+}
