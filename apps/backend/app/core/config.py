@@ -36,6 +36,25 @@ class Settings(BaseSettings):
     uploads_bucket: str = "omnirate-dev-uploads"
     uploads_max_bytes: int = 10 * 1024 * 1024
 
+    # P2-03: Ed25519 seed for hospital-visit QR signing, base64-encoded 32
+    # bytes. The dev default below is fixed (NOT secret) purely so local runs
+    # are reproducible — prod MUST override via env, generated with
+    # `Ed25519PrivateKey.generate()` and stored in a secrets manager.
+    hospital_qr_ed25519_seed_b64: str = "MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="
+    hospital_qr_ttl_hours: int = 72
+
+    # P2-05: LLM moderation fallback endpoint. Unset in dev — see
+    # app/ml/llm_moderation.py's _call_llm for what a real value needs to serve.
+    llm_moderation_api_url: str | None = None
+    llm_monthly_budget_usd: float = 500.0
+
+    # P2-07: DuckDB's postgres_scanner wants a libpq DSN, not SQLAlchemy's
+    # "+asyncpg" URL — kept as a separate setting rather than parsed from
+    # database_url so the two can point at different roles (export uses a
+    # read-only replica in prod).
+    database_url_psycopg: str = "postgresql://omnirate:omnirate@localhost:5432/omnirate"
+    analytics_bucket: str = "omnirate-dev-analytics"
+
     otel_exporter_endpoint: str | None = None
     sentry_dsn: str | None = None
 

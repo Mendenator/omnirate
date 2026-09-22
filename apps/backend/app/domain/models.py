@@ -22,10 +22,12 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+from app.ml.embeddings import EMBEDDING_DIM
 
 POE_LEVELS = ("L0", "L1", "L2", "L3", "L4")
 
@@ -177,6 +179,108 @@ class Complaint(Base):
     __table_args__ = (
         CheckConstraint("target_type IN ('review', 'entity')", name="ck_complaints_target_type"),
         CheckConstraint("status IN ('open', 'reviewing', 'resolved', 'dismissed')", name="ck_complaints_status"),
+    )
+
+
+class LocationPing(Base):
+    """P2-01: raw GPS pings backing a review's dwell-time evidence. Kept even
+    after the PoE decision is made — the pattern-of-life across pings is what
+    surge-mode/red-team analysis (P2-14) audits after the fact."""
+
+    __tablename__ = "location_pings"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    review_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False)
+    lat: Mapped[float] = mapped_column(Numeric(9, 6), nullable=False)
+    lon: Mapped[float] = mapped_column(Numeric(9, 6), nullable=False)
+    accuracy_m: Mapped[float] = mapped_column(Numeric(6, 2), nullable=False)
+    is_mock_provider_flag: Mapped[bool] = mapped_column(nullable=False, default=False)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (Index("ix_location_pings_review", "review_id"),)
+
+
+class HospitalQrToken(Base):
+    """P2-03: one row per issued QR. `jti` UNIQUE + `used_at` gives the
+    "давхар jti 100% татгалзагдах" acceptance a DB-level guarantee, not just
+    an application check — a race between two verify requests for the same
+    QR still can't both succeed (a second UPDATE ... WHERE used_at IS NULL
+    affects 0 rows)."""
+
+    __tablename__ = "hospital_qr_tokens"
+
+    jti: Mapped[str] = mapped_column(String(36), primary_key=True)
+    entity_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("entities.id", ondelete="CASCADE"), nullable=False)
+    issued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ReviewEmbedding(Base):
+    """P2-10: e5 embedding per review, for pgvector cosine-similarity search
+    (near-duplicate/paraphrase clustering — a fraud ring that varies wording
+    slightly per review evades exact-text matching but not this)."""
+
+    __tablename__ = "review_embeddings"
+
+    review_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("reviews.id", ondelete="CASCADE"), primary_key=True
+    )
+    embedding: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIM), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class UserDevice(Base):
+    """P2-13: one row per (user, device) pairing ever seen. `first_seen_at`
+    anchors the 7-day cooldown; `last_lat`/`last_lon`/`last_seen_at` feed
+    impossible-travel checks across sessions, not just within one GPS trail."""
+
+    __tablename__ = "user_devices"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    device_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_lat: Mapped[float | None] = mapped_column(Numeric(9, 6))
+    last_lon: Mapped[float | None] = mapped_column(Numeric(9, 6))
+
+    __table_args__ = (UniqueConstraint("user_id", "device_id", name="uq_user_devices_user_device"),)
+
+
+class ModerationCase(Base):
+    """P2-12: one row per review routed to human moderation (from
+    app/ml/llm_moderation.py's "needs_human_review" verdict)."""
+
+    __tablename__ = "moderation_cases"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    review_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False)
+    state: Mapped[str] = mapped_column(String(32), nullable=False, default="awaiting_first_decision")
+    final_verdict: Mapped[str | None] = mapped_column(String(16))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint(
+            "state IN ('awaiting_first_decision','awaiting_second_decision','resolved','escalated')",
+            name="ck_moderation_cases_state",
+        ),
+    )
+
+
+class ModerationDecision(Base):
+    __tablename__ = "moderation_decisions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("moderation_cases.id", ondelete="CASCADE"), nullable=False)
+    moderator_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    verdict: Mapped[str] = mapped_column(String(16), nullable=False)
+    decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("case_id", "moderator_id", name="uq_moderation_decisions_case_moderator"),
+        CheckConstraint("verdict IN ('approve','reject')", name="ck_moderation_decisions_verdict"),
     )
 
 

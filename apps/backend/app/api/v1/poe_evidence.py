@@ -17,7 +17,11 @@ from app.core import e_barimt
 from app.core.config import get_settings
 from app.core.deps import CurrentUser, get_current_user
 from app.db.session import get_db
-from app.domain.models import EBarimtReceipt, Entity, PoeEvidence, Review
+from app.domain.geofence import GpsPing, compute_dwell_seconds, detect_mock_location
+from app.domain.models import EBarimtReceipt, Entity, LocationPing, PoeEvidence, Review
+
+MIN_DWELL_SECONDS_FOR_L2 = 5 * 60
+GEOFENCE_RADIUS_M = 75
 
 router = APIRouter(prefix="/api/v1/reviews", tags=["poe-evidence"])
 
@@ -80,3 +84,74 @@ async def attach_e_barimt_evidence(
         ) from exc
 
     return {"poe_level": review.poe_level, "ddtd": receipt.ddtd}
+
+
+class GpsPingIn(BaseModel):
+    lat: float
+    lon: float
+    accuracy_m: float
+    is_mock_provider_flag: bool = False
+    recorded_at: datetime
+
+
+class GpsEvidenceRequest(BaseModel):
+    pings: list[GpsPingIn]
+
+
+@router.post("/{review_id}/evidence/gps", status_code=201)
+async def attach_gps_evidence(
+    review_id: str,
+    req: GpsEvidenceRequest,
+    db: AsyncSession = Depends(get_db),
+    user: CurrentUser = Depends(get_current_user),
+):
+    """P2-01/P2-02: dwell-time-based PoE evidence. Rejects outright on any
+    mock-location signal (OS flag, impossible speed jump, suspiciously
+    uniform accuracy) rather than just discounting it — a spoofed GPS trail
+    proves nothing about presence, so partial credit isn't appropriate.
+    """
+    review = await db.get(Review, review_id)
+    if review is None or review.user_id != user.user_id:
+        raise HTTPException(status_code=404, detail="review not found")
+
+    entity = await db.get(Entity, review.entity_id)
+    if entity.lat is None or entity.lon is None:
+        raise HTTPException(status_code=422, detail={"reason_code": "no_entity_location", "message": "entity has no geofence center"})
+
+    domain_pings = [
+        GpsPing(lat=p.lat, lon=p.lon, accuracy_m=p.accuracy_m, is_mock_provider_flag=p.is_mock_provider_flag, recorded_at=p.recorded_at)
+        for p in req.pings
+    ]
+
+    if detect_mock_location(domain_pings):
+        raise HTTPException(status_code=422, detail={"reason_code": "mock_location_detected", "message": "GPS trail failed spoofing checks"})
+
+    dwell_seconds = compute_dwell_seconds(
+        domain_pings, center_lat=float(entity.lat), center_lon=float(entity.lon), radius_m=GEOFENCE_RADIUS_M
+    )
+
+    for p in req.pings:
+        db.add(
+            LocationPing(
+                review_id=review.id,
+                lat=p.lat,
+                lon=p.lon,
+                accuracy_m=p.accuracy_m,
+                is_mock_provider_flag=p.is_mock_provider_flag,
+                recorded_at=p.recorded_at,
+            )
+        )
+
+    if dwell_seconds < MIN_DWELL_SECONDS_FOR_L2:
+        await db.commit()
+        raise HTTPException(
+            status_code=422,
+            detail={"reason_code": "insufficient_dwell_time", "message": f"only {dwell_seconds:.0f}s in geofence, need {MIN_DWELL_SECONDS_FOR_L2}s"},
+        )
+
+    db.add(PoeEvidence(review_id=review.id, kind="gps", payload={"dwell_seconds": dwell_seconds}))
+    if review.poe_level in ("L0", "L1"):
+        review.poe_level = "L2"
+    await db.commit()
+
+    return {"poe_level": review.poe_level, "dwell_seconds": dwell_seconds}
