@@ -20,6 +20,10 @@ Thanks for your interest in OmniRate. This is a monorepo implementing the
 
 ## Local setup
 
+Use the pinned runtime versions — `.nvmrc` (Node, repo root) and
+`apps/backend/.python-version` (Python) — via `nvm use` / `pyenv install`
+so your environment matches CI.
+
 ```bash
 cp .env.example .env
 docker compose up -d          # postgres, redis, opensearch
