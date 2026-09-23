@@ -1,0 +1,616 @@
+<title>OmniRate: гүйцэтгэлийн тайлан</title>
+<meta name="description" content="OmniRate төслийн хийгдсэн ажлын мэргэжлийн бус хүнд зориулсан тайлбар тайлан">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #1C1B1F;
+    --ink-soft: #55524C;
+    --paper: #FAF8F4;
+    --paper-raised: #FFFFFF;
+    --gold: #A9752F;
+    --gold-soft: #F3E6D2;
+    --teal: #24615F;
+    --teal-soft: #DCEBE9;
+    --rust: #9C4638;
+    --rust-soft: #F3DCD7;
+    --line: #E4DFD3;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ECE7DE;
+      --ink-soft: #B9B2A5;
+      --paper: #15141A;
+      --paper-raised: #1E1C23;
+      --gold: #D9A34F;
+      --gold-soft: #3A2E1C;
+      --teal: #5CB0AC;
+      --teal-soft: #1C3230;
+      --rust: #DD8B7B;
+      --rust-soft: #3A211D;
+      --line: #322F38;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #ECE7DE;
+    --ink-soft: #B9B2A5;
+    --paper: #15141A;
+    --paper-raised: #1E1C23;
+    --gold: #D9A34F;
+    --gold-soft: #3A2E1C;
+    --teal: #5CB0AC;
+    --teal-soft: #1C3230;
+    --rust: #DD8B7B;
+    --rust-soft: #3A211D;
+    --line: #322F38;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Golos Text', 'PT Sans', sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+    padding-inline: 20px;
+  }
+
+  h1, h2, h3, .display {
+    font-family: 'Lora', 'PT Serif', serif;
+    font-weight: 600;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding-block: 56px 80px; }
+
+  /* ---------- Hero ---------- */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 20px;
+    height: 2px;
+    background: var(--gold);
+    display: inline-block;
+  }
+
+  h1 {
+    font-size: clamp(32px, 6vw, 46px);
+    line-height: 1.12;
+    margin: 0 0 18px;
+    letter-spacing: -0.01em;
+  }
+
+  .lede {
+    font-size: 19px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 8px;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .meta-row strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- Section scaffolding ---------- */
+  section { margin-top: 64px; }
+  .section-head { margin-bottom: 26px; }
+  h2 {
+    font-size: clamp(24px, 4vw, 29px);
+    margin: 0 0 8px;
+  }
+  .section-sub { color: var(--ink-soft); font-size: 16px; max-width: 58ch; }
+
+  p { margin: 0 0 16px; }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* ---------- Timeline (phases) ---------- */
+  .timeline { position: relative; padding-left: 30px; }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--line);
+  }
+  .phase {
+    position: relative;
+    padding-bottom: 34px;
+  }
+  .phase:last-child { padding-bottom: 0; }
+  .phase::before {
+    content: "";
+    position: absolute;
+    left: -30px;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--paper-raised);
+    border: 2px solid var(--teal);
+  }
+  .phase::after {
+    content: "";
+    position: absolute;
+    left: -23px;
+    top: 11px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+  .phase-tag {
+    font-family: 'Golos Text', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--teal);
+    text-transform: uppercase;
+  }
+  .phase h3 {
+    font-size: 21px;
+    margin: 4px 0 8px;
+  }
+  .phase p { color: var(--ink-soft); font-size: 15.5px; margin-bottom: 8px; }
+  .phase-fact {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: var(--teal-soft);
+    border-radius: 6px;
+    padding: 4px 10px;
+  }
+
+  /* ---------- Callout ---------- */
+  .callout {
+    background: var(--gold-soft);
+    border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-top: 20px;
+  }
+  .callout p { margin-bottom: 0; color: var(--ink); }
+  .callout p + p { margin-top: 10px; }
+  .callout strong { color: var(--gold); }
+
+  /* ---------- Bug case cards ---------- */
+  .case-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 620px) {
+    .case-grid { grid-template-columns: 1fr; }
+  }
+  .case {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .case-area {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .case-area::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--rust);
+    flex-shrink: 0;
+  }
+  .case h4 {
+    font-family: 'Lora', serif;
+    font-size: 16.5px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    line-height: 1.35;
+  }
+  .case p {
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    margin-bottom: 0;
+  }
+  .case .fixed-tag {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--teal);
+    background: var(--teal-soft);
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+
+  .case.wide { grid-column: 1 / -1; }
+
+  /* ---------- Stat grid ---------- */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 4px;
+  }
+  @media (max-width: 560px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .stat {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 16px;
+    text-align: left;
+  }
+  .stat .num {
+    font-family: 'Lora', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--teal);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat .label {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 5px;
+    line-height: 1.4;
+  }
+
+  /* ---------- Outstanding list ---------- */
+  .outstanding { display: flex; flex-direction: column; gap: 12px; }
+  .out-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    align-items: flex-start;
+  }
+  .out-icon {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--rust-soft);
+    color: var(--rust);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Lora', serif;
+    margin-top: 1px;
+  }
+  .out-item h4 { margin: 0 0 3px; font-size: 15.5px; font-weight: 600; font-family: 'Golos Text', sans-serif; }
+  .out-item p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+
+  /* ---------- Footer note ---------- */
+  .closing {
+    margin-top: 70px;
+    padding-top: 26px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+  .closing strong { color: var(--ink); }
+
+  ::selection { background: var(--gold-soft); color: var(--ink); }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">OmniRate · Тайлан</div>
+    <h1>Юу хийгдэв, юу нь бодитоор ажилладгийг хэрхэн шалгасан бэ</h1>
+    <p class="lede">
+      Энэ тайлан нь техникийн мэдлэггүй хүнд зориулж, OmniRate төслийн хүрээнд юу барьж босгосон,
+      яагаад итгэж болохоор байгааг энгийн үгээр тайлбарлаж байна.
+    </p>
+    <div class="meta-row">
+      <span><strong>Төсөл:</strong> OmniRate — баталгаатай үнэлгээний систем</span>
+      <span><strong>Хамрах хүрээ:</strong> 4 үе шат, бүрэн код суурь</span>
+      <span><strong>Шалгалт:</strong> бодит сервер дээр ажиллуулж туршсан</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <h2>Юуны тухай төсөл вэ?</h2>
+    </div>
+    <div class="prose">
+      <p>
+        OmniRate бол рестораны, эмнэлгийн, сургуулийн, тэр байтугай сонгуулиар сонгогддог албан тушаалтны
+        талаарх хэрэглэгчийн үнэлгээг цуглуулдаг систем. Гэхдээ Google-ийн эсвэл Facebook-ийн сэтгэгдэлтэй
+        адилгүй нэг чухал ялгаа бий: <strong>хүн үнэхээр очиж үйлчлүүлсэн эсэхийг баталгаажуулдаг</strong> —
+        жишээ нь Монголын албан ёсны цахим баримт (е-баримт)-аар, эсвэл газрын байршлаар шалгаж, хуурамч
+        болон худал сэтгэгдлийг аль болох хаадаг.
+      </p>
+      <p>
+        Ийм систем барихад зөвхөн "код бичих" хангалтгүй. Мөнгө, хувийн мэдээлэл, хүний нэр төртэй холбоотой
+        учир код зөв ажиллаж байгааг нотлохгүйгээр гаргах боломжгүй. Тиймээс энэ тайлангийн гол сэдэв бол:
+        <strong>юу барьсан бэ, тэгээд яаж "энэ бодитоор ажилладаг" гэдгийг өөрөө биечлэн шалгасан бэ.</strong>
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Дөрвөн үе шатаар барьсан</h2>
+      <p class="section-sub">Том системийг нэг дор бус, аюулгүй, шат дараатай өсгөж хийсэн.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="phase">
+        <div class="phase-tag">1-р шат</div>
+        <h3>Суурь бүтэц</h3>
+        <p>
+          Хэрэглэгч нэвтрэх, өгөгдөл хадгалах сан, шинэ төрлийн газар (жишээ нь "рестораны" ангилал) кодчлол
+          өөрчлөхгүйгээр нэмэх боломж — эдгээр нь дараа орох бүх зүйлийн доод давхарга.
+        </p>
+        <span class="phase-fact">Non-developer 15 минутын дотор шинэ ангилал нэмж чадна</span>
+      </div>
+
+      <div class="phase">
+        <div class="phase-tag">2-р шат</div>
+        <h3>Ресторан — анхны бодит хэрэглээ</h3>
+        <p>
+          Хэрэглэгч үнэлгээ бичих, е-баримтаар "би үнэхээр очсон" гэдгээ батлах, зурган баримт хавсаргах,
+          эзэмшигч сэтгэгдэлд хариулах боломж. Монгол хэлний хайлт (галиг, ө/ү зэрэг) энд орсон.
+        </p>
+        <span class="phase-fact">е-баримтын нэг код зөвхөн нэг удаа ашиглагдана — давхардал 100% хаагдана</span>
+      </div>
+
+      <div class="phase">
+        <div class="phase-tag">3-р шат</div>
+        <h3>Эмнэлэг + хуурамчаас хамгаалалт</h3>
+        <p>
+          Байршлаар "тэр хүн үнэхээр очсон уу" гэдгийг шалгах, хиймэл оюун ашиглан зохисгүй агуулгыг илрүүлэх,
+          олон хуурамч бүртгэл нэгэн зэрэг халдах ("bombing") дайралтыг таних загвар.
+        </p>
+        <span class="phase-fact">Синтетик дайралтын өгөгдөр дээр загвар 90%+ нарийвчлалтай ялгаж чадсан</span>
+      </div>
+
+      <div class="phase">
+        <div class="phase-tag">4-р шат</div>
+        <h3>Улс төрчид — хамгийн эмзэг хэсэг</h3>
+        <p>
+          Нэр хүндэд халддаг эх сурвалжгүй буруутгалыг автоматаар хаах, засах хүсэлт (takedown), хуулийн
+          байгууллагын хүсэлтэд зориулсан тусгай портал, өөрчлөлт бүрийг гинжлэн бүртгэдэг аудит.
+        </p>
+        <span class="phase-fact">Эх сурвалжгүй гэмт хэргийн буруутгал автоматаар хаагдана</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Яагаад зөвхөн бичээд орхосонгүй вэ?</h2>
+    </div>
+    <div class="prose">
+      <p>
+        Ихэнх томоохон программ "цаасан дээр" бол зөв харагддаг — код нь эвдрэлгүй бичигдсэн байдаг ч
+        бодит компьютер дээр асаахад тэр даруйдаа унадаг тохиолдол их байдаг. Тиймээс энэ ажлыг зөвхөн
+        бичээд орхосонгүй: <strong>жинхэнэ сервер асааж, жинхэнэ мэдээллийн сан холбож, вэбсайт, гар утасны
+        апп-ыг браузераар нээж, товчлуур дараад, өгөгдөл үнэхээр орж байгаа эсэхийг</strong> шалгасан.
+      </p>
+    </div>
+    <div class="callout">
+      <p>
+        <strong>Дүн:</strong> Энэ шалгалтын явцад код "цаасан дээр зөв" боловч бодит ажиллуулахад эвдэрдэг
+        <strong>13 бодит алдаа</strong> олдож, бүгд засагдсан. Доор хамгийн сургамжтай хэдэн жишээг харуулав.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Олдож, засагдсан бодит алдаанууд</h2>
+      <p class="section-sub">
+        Эдгээрийг "туршилтын орчинд систем бодитоор ажиллуулсан" тохиолдолд л олж болно — код уншаад
+        олдоггүй төрлийн алдаанууд.
+      </p>
+    </div>
+
+    <div class="case-grid">
+      <div class="case">
+        <div class="case-area">Байршлын алдаа</div>
+        <h4>Хэрэглэгч газраас гарч буцаж ирэхэд "цаг" худал нэмэгддэг байсан</h4>
+        <p>
+          Байгаа эсэхийг GPS-ээр шалгах логикт алдаа байсан: хэрэглэгч 5 минут очоод, гарч, дараа нь буцаж
+          ирвэл систем эдгээрийг "тасралтгүй 5 минут байсан" гэж буруу тооцдог байсан.
+        </p>
+        <span class="fixed-tag">Засагдсан</span>
+      </div>
+
+      <div class="case">
+        <div class="case-area">Сервер асаах</div>
+        <h4>Гар утасны апп сервертэй огт холбогдож чаддаггүй байсан</h4>
+        <p>
+          Вэбсайт болон сервер өөр өөр "хаяг" дээр ажилладаг тул хамгаалалтын дүрэм (CORS) тохируулаагүй
+          байсан нь гар утасны апп-аас ирсэн хүсэлт бүрийг блоклож байсан.
+        </p>
+        <span class="fixed-tag">Засагдсан</span>
+      </div>
+
+      <div class="case">
+        <div class="case-area">Гар утасны апп</div>
+        <h4>Нэвтрэх мэдээлэл хадгалагдахгүй байсан (веб хувилбарт)</h4>
+        <p>
+          Гар утасны нууц хадгалалтын систем зөвхөн бодит утсан дээр ажилладаг тул, туршилтын зорилгоор
+          браузераар нээхэд алдаа өгдөг байсныг олж, тохирох залруулга нэмсэн.
+        </p>
+        <span class="fixed-tag">Засагдсан</span>
+      </div>
+
+      <div class="case">
+        <div class="case-area">Вэб хуудас</div>
+        <h4>Бүтээгдэхүүний эцсийн хувилбар (production) угсрахад бүхэлдээ унадаг байсан</h4>
+        <p>
+          Хөгжүүлэлтийн горимд бүх зүйл зөв харагддаг байсан ч, жинхэнэ хэрэглэгчид зориулсан хувилбар
+          угсрахад Next.js-ийн шинэ хувилбарын өөрчлөлттэй зөрчилдөж, 3 хуудас угсрагдахгүй байсан.
+        </p>
+        <span class="fixed-tag">Засагдсан</span>
+      </div>
+
+      <div class="case">
+        <div class="case-area">Мэдээллийн сан</div>
+        <h4>Postgres мэдээллийн сангийн "тусгай хэлний" програм огт суугаагүй байсан</h4>
+        <p>
+          Ижил төрлийн бичвэрийг тооцоолоход шаардлагатай тусгай хэсэг (pgvector) сервер зассан
+          дүрэм зурагт багтаагаагүй байсан тул мэдээллийн сан асаахад л энэ дутагдал илэрсэн.
+        </p>
+        <span class="fixed-tag">Засагдсан</span>
+      </div>
+
+      <div class="case">
+        <div class="case-area">Ард ажиллагч (worker)</div>
+        <h4>Хайлтын систем, автомат тайлан гаргагч зэрэг 5 фоновын процесс огт асахгүй байсан</h4>
+        <p>
+          Тохиргооны нэг мөр буруу бичигдсэнээс болж, хайлт шинэчлэх, гомдол тайлагнах зэрэг фоновын
+          үйлчилгээнүүд эхлэх мөчид л шууд унадаг байсан.
+        </p>
+        <span class="fixed-tag">Засагдсан</span>
+      </div>
+
+      <div class="case wide">
+        <div class="case-area">Хяналт ба нягтлан шалгах</div>
+        <h4>"Олдсон алдаа" болгон бодит биш — үүнийг өөрөө дахин шалгасан жишээ</h4>
+        <p>
+          Нэг тестэд Монгол үг гажигтай ("тэмдэгт эвдэрсэн" мэт) хадгалагдсан харагдсан. Гэвч үүнийг
+          шууд "алдаа" гэж бүртгэхийн оронд гурван өөр аргаар дахин шалгаж (шууд өгөгдлийн сангаас,
+          дунд шатны сервисээс, эцэст нь бодит хэрэглэгчийн үйлдлээр), энэ нь код дахь алдаа биш,
+          нэг удаагийн санамсаргүй давталт байсныг батлав. Хуурамч дохиог үнэн алдаанаас ялгах нь
+          үнэн алдааг олохтой адил чухал.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Одоо ямар байдалтай вэ?</h2>
+      <p class="section-sub">Дээрх бүх алдааг засаад, эцэст нь бүх системийг эхнээс нь дахин ажиллуулж шалгасан дүн.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="num">169/169</div>
+        <div class="label">Автомат тест бүгд амжилттай (бодит мэдээллийн сан дээр)</div>
+      </div>
+      <div class="stat">
+        <div class="num">7/7</div>
+        <div class="label">Систем бүхэлдээ (сервер, сан, хайлт г.м.) эрүүл ажиллаж байна</div>
+      </div>
+      <div class="stat">
+        <div class="num">0</div>
+        <div class="label">Хүртээмжийн (WCAG) ноцтой зөрчил вэб хуудсуудад</div>
+      </div>
+      <div class="stat">
+        <div class="num">3</div>
+        <div class="label">Платформ бодитоор туршигдсан: сервер, вэб, гар утас</div>
+      </div>
+      <div class="stat">
+        <div class="num">13</div>
+        <div class="label">Зөвхөн бодит ажиллуулалтаар олдсон алдаа — бүгд засагдсан</div>
+      </div>
+      <div class="stat">
+        <div class="num">100%</div>
+        <div class="label">Нэвтрэх → үнэлгээ бичих урсгал эхнээс төгсгөл хүртэл шалгагдсан</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Юу үлдсэн бэ?</h2>
+      <p class="section-sub">
+        Эдгээр нь код бичих асуудал биш — бодит хүн, гэрээ, зөвшөөрөл шаарддаг тул програмаар шийдэгдэхгүй.
+      </p>
+    </div>
+
+    <div class="outstanding">
+      <div class="out-item">
+        <div class="out-icon">1</div>
+        <div>
+          <h4>Төрийн байгууллагатай гэрээ (ДАН, е-баримт)</h4>
+          <p>Хэрэглэгчийн үнэмлэх, худалдан авалтыг баталгаажуулахад шаардлагатай — албан ёсны зөвшөөрөл авах шаардлагатай.</p>
+        </div>
+      </div>
+      <div class="out-item">
+        <div class="out-icon">2</div>
+        <div>
+          <h4>Хуульчийн эцсийн хяналт</h4>
+          <p>Хувийн мэдээлэл, нэр төрийн эрсдэлтэй хэсгүүдийг Монгол Улсын хуульч баталгаажуулах ёстой.</p>
+        </div>
+      </div>
+      <div class="out-item">
+        <div class="out-icon">3</div>
+        <div>
+          <h4>Аюулгүй байдлын шалгалт (pentest)</h4>
+          <p>Гадны мэргэжилтэн зориудаар халдаж, цоорхойг эрж олох ёстой — код бичигчийн өөрийн шалгалт хангалтгүй.</p>
+        </div>
+      </div>
+      <div class="out-item">
+        <div class="out-icon">4</div>
+        <div>
+          <h4>Бодит хэрэглэгчийн туршилт</h4>
+          <p>20–1,000 бодит хүн ашиглаад санал өгөх ёстой хэсгүүд (хэрэглээний ойлгомжтой байдал, туршилтын бета).</p>
+        </div>
+      </div>
+      <div class="out-item">
+        <div class="out-icon">5</div>
+        <div>
+          <h4>Зохиомол оюуны загварыг бодит өгөгдөр дээр сургах</h4>
+          <p>Одоогоор туршилтын (синтетик) өгөгдөр дээр ажилладаг; бодит хэрэглээний өгөгдөр хуримтлагдсаны дараа дахин сургана.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="closing">
+    <p>
+      <strong>Товчхон дүгнэлт:</strong> Барих ёстой байсан системийн код-оор шийдэгдэх хэсэг бүхэлдээ бичигдэж,
+      дараа нь худал биш — компьютер дээр бодитоор асааж, товчлуур дараад, өгөгдөл жинхэнэ хадгалагдаж
+      байгааг харснаар баталгаажсан. Одоо үлдсэн зүйлс бүгд хүн, гэрээ, зөвшөөрөл шаарддаг алхамууд.
+    </p>
+  </div>
+
+</div>
