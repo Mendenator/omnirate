@@ -69,6 +69,48 @@ jobs:
   web:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: false # enabled once apps/web has a package.json (P0-09/P0-10)
+
+    defaults:
+      run:
+        working-directory: apps/web
+
     steps:
-      - run: echo "web CI pending P0-09/P0-10"
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Format check (prettier)
+        run: npm run format:check
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      # `next build` also re-runs lint + type-check internally, but the
+      # explicit steps above give a faster, more specific failure signal.
+      - name: Build
+        run: npm run build
+
+  # Split from `web` because it needs the live backend stack (custom Postgres
+  # image with pg_jsonschema/pgvector, OpenSearch, migrations) rather than
+  # just Node — see docs/PROGRESS.md for why the backend job's own Postgres
+  # service deliberately uses a lighter stock image instead of that build.
+  # Not yet wired up: doing this well needs (a) accepting the custom
+  # infra/postgres image's build time inside the 10-minute budget, and
+  # (b) a seed-data step for OMNIRATE_E2E_ENTITY_ID (currently that test
+  # just skips — see apps/web/e2e/critical-flows.spec.ts). Tracked as
+  # follow-up rather than rushed in here.
+  web-e2e:
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - run: echo "web e2e CI pending full docker-compose stack + seed data"

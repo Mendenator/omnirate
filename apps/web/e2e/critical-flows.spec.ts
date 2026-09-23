@@ -20,7 +20,7 @@ test("admin can define a new category without touching code", async ({ page }) =
   await expect(page.locator("text=нийтлэгдлээ")).toBeVisible({ timeout: 5000 });
 });
 
-test("entity page renders sections in the uniform order", async ({ page, request }) => {
+test("entity page renders sections in the uniform order", async ({ page }) => {
   // Relies on a seeded entity ID in the test environment — CI wiring for
   // seed data is part of the docker-compose integration profile, not this
   // sandbox (see docs/PROGRESS.md).
