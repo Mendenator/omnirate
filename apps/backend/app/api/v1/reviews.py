@@ -27,7 +27,10 @@ async def create_review(
     if cached is not None:
         status, body = cached
         if status >= 400:
-            raise HTTPException(status_code=status, detail=body)
+            # `body` is stored as {"detail": ...} (see the IntegrityError handler
+            # below) so the replayed error matches the original response shape
+            # instead of nesting it again under a second "detail" key.
+            raise HTTPException(status_code=status, detail=body.get("detail", body))
         return body
 
     review = Review(

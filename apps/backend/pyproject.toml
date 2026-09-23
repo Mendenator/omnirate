@@ -73,6 +73,16 @@ ignore = ["B008"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 
+[tool.coverage.run]
+# SQLAlchemy's async ORM bridges to sync DBAPI calls via the `greenlet`
+# library — without this, coverage.py can't see into code that runs after
+# a context switch into one of those greenlets, so any endpoint that awaits
+# a db.execute/get/commit reads as "uncovered" past that point even though
+# it demonstrably ran (correct status codes, correct branching). Confirmed
+# by comparing coverage before/after adding this line against the same
+# passing test suite.
+concurrency = ["greenlet", "thread"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true

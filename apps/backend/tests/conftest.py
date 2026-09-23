@@ -30,9 +30,13 @@ async def engine():
 
 
 @pytest_asyncio.fixture
-async def db_session(engine):
-    session_factory = async_sessionmaker(engine, expire_on_commit=False)
-    async with session_factory() as session:
+def test_session_factory(engine):
+    return async_sessionmaker(engine, expire_on_commit=False)
+
+
+@pytest_asyncio.fixture
+async def db_session(test_session_factory):
+    async with test_session_factory() as session:
         yield session
 
 
@@ -73,3 +77,27 @@ async def client(engine):
         yield ac
 
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+def worker_db(test_session_factory, monkeypatch):
+    """Points every arq worker module's module-level `async_session_factory`
+    at this test's engine instead of app.db.session's process-global one.
+
+    Worker functions open their own session via `async_session_factory()`
+    rather than taking a session as a parameter (they're arq entry points,
+    not FastAPI dependencies) — that global engine is created once at import
+    time and its pooled connections get bound to whatever event loop was
+    running then. pytest-asyncio gives each test function its own event
+    loop, so a pooled connection from an earlier test's loop is dead by the
+    time a later test's worker call tries to reuse it (intermittent
+    'Event loop is closed' / asyncpg protocol errors, not a real app bug).
+    Repointing at the per-test engine sidesteps that entirely.
+    """
+    for module_name in (
+        "app.workers.moderation",
+        "app.workers.indexer",
+        "app.workers.attendance",
+        "app.workers.transparency",
+    ):
+        monkeypatch.setattr(f"{module_name}.async_session_factory", test_session_factory)
