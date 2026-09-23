@@ -1,3 +1,5 @@
+import random
+
 from sklearn.metrics import roc_auc_score
 
 from app.ml.fraud_features import FraudFeatures
@@ -7,6 +9,15 @@ from app.ml.fraud_synthetic_data import generate_synthetic_dataset
 
 def test_trained_model_separates_synthetic_fraud_from_normal():
     rows, labels = generate_synthetic_dataset(n_normal=1000, n_bombing=150, n_sleeper=150)
+
+    # generate_synthetic_dataset emits normal/bombing/sleeper as contiguous
+    # blocks, so an unshuffled 80/20 split puts the entire fraud class in the
+    # test tail (and worse, none of it in train) — shuffle indices (fixed
+    # seed for determinism) to get a representative split of both classes.
+    indices = list(range(len(rows)))
+    random.Random(0).shuffle(indices)
+    rows = [rows[i] for i in indices]
+    labels = [labels[i] for i in indices]
 
     split = int(len(rows) * 0.8)
     train_rows, test_rows = rows[:split], rows[split:]

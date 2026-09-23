@@ -1,4 +1,9 @@
-from app.domain.jurisdiction import MappingRow, build_mapping_lookup, jurisdiction_match, validate_full_coverage
+from app.domain.jurisdiction import (
+    MappingRow,
+    build_mapping_lookup,
+    jurisdiction_match,
+    validate_full_coverage,
+)
 
 ROWS = [
     MappingRow("khan-uul-1", "ub-6"),

@@ -1,4 +1,9 @@
-from app.ml.graph_fraud import UserLinkEdge, build_user_link_graph, detect_communities, flag_suspicious_communities
+from app.ml.graph_fraud import (
+    UserLinkEdge,
+    build_user_link_graph,
+    detect_communities,
+    flag_suspicious_communities,
+)
 
 
 def test_build_graph_from_edges():

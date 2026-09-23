@@ -29,7 +29,7 @@ _SOURCE_CITATION_PATTERNS = [
     r"https?://\S+",
     r"эх\s*сурвалж\s*[:\-]",
     r"шүүхийн\s*шийдвэр",
-    r"\b\d{4}\s*оны\s*\S+\s*тогтоол",  # e.g. "2025 оны ... тогтоол"
+    r"\b\d{4}\s*оны\s+\S+(?:\s+\S+){0,3}\s+тогтоол",  # e.g. "2025 оны 4-р сарын тогтоол"
 ]
 _SOURCE_CITATION_RE = re.compile("|".join(_SOURCE_CITATION_PATTERNS), re.IGNORECASE)
 

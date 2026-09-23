@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.attendance_source import AttendanceRecord, fetch_attendance_records
+from app.core.attendance_source import fetch_attendance_records
 from app.domain.models import Entity, PoliticianAttendance
 
 

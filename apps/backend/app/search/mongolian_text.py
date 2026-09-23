@@ -34,7 +34,21 @@ _TRANSLIT_RULES.sort(key=lambda rule: -len(rule[0]))
 
 
 def transliterate_latin_to_cyrillic(latin_text: str) -> str:
-    """Best-effort galig conversion for a latin-typed query, e.g. 'hool' -> 'хоол'."""
+    """Best-effort galig conversion for a latin-typed query, e.g. 'hool' -> 'хоол'.
+
+    KNOWN GAP: latin 'u' and the 'oo' digraph are genuinely ambiguous in
+    Mongolian romanization — 'u' can stand for у/ү/ө and 'oo' for оо/өө
+    depending on the specific word, with no way to disambiguate from the
+    latin spelling alone. This function picks one deterministic mapping
+    (u->ү, oo->оо), so it does NOT reproduce the SOW's own worked example
+    ("urgoo" -> "өргөө", which needs u->ө and oo->өө for that specific
+    word) — see tests/test_mongolian_text.py. A correct fix generates
+    multiple candidate variants per ambiguous vowel and lets the caller
+    (build_query_variants) OR them together, matching what SOW §5.3
+    actually describes ("кирилл хувилбарууд руу хөрвүүлж, OR асуулга
+    үүсгэнэ" — convert to Cyrillic *variants*, plural). Not yet
+    implemented; tracked in docs/PROGRESS.md.
+    """
     text = latin_text.lower()
     out = []
     i = 0

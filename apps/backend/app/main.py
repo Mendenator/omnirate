@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from arq import create_pool
 from arq.connections import RedisSettings
 from fastapi import FastAPI
@@ -13,15 +15,9 @@ configure_logging()
 configure_sentry()
 settings = get_settings()
 
-app = FastAPI(title="OmniRate API", version="0.1.0")
-app.add_middleware(RateLimitMiddleware)
-app.include_router(api_router)
 
-configure_tracing(app)
-
-
-@app.on_event("startup")
-async def _init_redis() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     # Skipped when a test (or other caller) has already injected a client —
     # see tests/conftest.py, which sets app.state.redis to a fake before the
     # app ever starts handling requests.
@@ -32,6 +28,14 @@ async def _init_redis() -> None:
     if not hasattr(app.state, "opensearch"):
         app.state.opensearch = get_opensearch_client()
         await ensure_entities_index(app.state.opensearch)
+    yield
+
+
+app = FastAPI(title="OmniRate API", version="0.1.0", lifespan=lifespan)
+app.add_middleware(RateLimitMiddleware)
+app.include_router(api_router)
+
+configure_tracing(app)
 
 
 @app.get("/healthz")

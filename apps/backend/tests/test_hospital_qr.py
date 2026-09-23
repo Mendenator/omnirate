@@ -3,7 +3,11 @@ from unittest.mock import patch
 
 import pytest
 
-from app.core.hospital_qr import HospitalQrPayload, QrVerificationError, generate_hospital_qr, verify_hospital_qr
+from app.core.hospital_qr import (
+    QrVerificationError,
+    generate_hospital_qr,
+    verify_hospital_qr,
+)
 
 
 def test_generate_then_verify_roundtrip():

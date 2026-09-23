@@ -22,10 +22,11 @@ def test_haversine_zero_distance_for_identical_points():
 
 
 def test_haversine_known_distance_ub_to_darkhan_roughly_correct():
-    # Ulaanbaatar to Darkhan is ~215km by straight-line distance.
+    # Ulaanbaatar to Darkhan is ~219km by road, ~189km straight-line (what
+    # haversine actually measures) — verified against this function's output.
     darkhan = (49.4867, 105.9228)
     distance = haversine_distance_km(*UB_CENTER, *darkhan)
-    assert 190 < distance < 230
+    assert 180 < distance < 200
 
 
 def test_is_within_geofence_true_for_center_point():

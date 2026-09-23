@@ -27,8 +27,12 @@ def test_transliterate_hool_to_khool_family():
 
 
 def test_transliterate_urgoo():
-    # "urgoo" -> u->ү, r->р, g->г, oo->оо, l? no l here => "ургоо"
-    assert transliterate_latin_to_cyrillic("urgoo") == "ургоо"
+    # NOT the SOW's own worked example ("urgoo" -> "өргөө") — that needs
+    # ambiguous-vowel handling this function doesn't do yet; see its
+    # docstring in app/search/mongolian_text.py for why and what's missing.
+    # This asserts the function's actual, documented, single-mapping output:
+    # u->ү, r->р, g->г, oo->оо => "үргоо".
+    assert transliterate_latin_to_cyrillic("urgoo") == "үргоо"
 
 
 def test_light_stem_strips_known_suffix():

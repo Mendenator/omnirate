@@ -1,4 +1,7 @@
-from app.domain.political_scoring import ReviewWithJurisdiction, compute_jurisdiction_separated_scores
+from app.domain.political_scoring import (
+    ReviewWithJurisdiction,
+    compute_jurisdiction_separated_scores,
+)
 from app.domain.scoring import ScoredReview
 
 

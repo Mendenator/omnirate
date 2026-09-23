@@ -1,4 +1,8 @@
-from app.domain.defamation import check_strict_defamation, contains_criminal_allegation, has_cited_source
+from app.domain.defamation import (
+    check_strict_defamation,
+    contains_criminal_allegation,
+    has_cited_source,
+)
 
 
 def test_unsourced_criminal_allegation_is_blocked():

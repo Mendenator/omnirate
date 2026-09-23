@@ -46,17 +46,24 @@ def is_within_geofence(ping: GpsPing, *, center_lat: float, center_lon: float, r
 
 
 def compute_dwell_seconds(pings: list[GpsPing], *, center_lat: float, center_lon: float, radius_m: float) -> float:
-    """Sum of time between consecutive pings that are *both* inside the
-    geofence — a ping pair straddling the boundary (one in, one out) doesn't
-    count, which biases slightly conservative (undercounts dwell) rather
-    than overcounts, matching the SOW's fraud-resistance intent.
-    """
-    inside = [p for p in sorted(pings, key=lambda p: p.recorded_at) if is_within_geofence(p, center_lat=center_lat, center_lon=center_lon, radius_m=radius_m)]
-    if len(inside) < 2:
-        return 0.0
+    """Sum of time between consecutive pings (adjacent in the real timeline)
+    that are *both* inside the geofence — a ping pair straddling the
+    boundary (one in, one out) doesn't count, which biases slightly
+    conservative (undercounts dwell) rather than overcounts, matching the
+    SOW's fraud-resistance intent.
 
+    Pairing must happen over the *full* timeline, not just the filtered
+    inside-only pings — filtering first would silently bridge an excursion
+    outside the geofence (e.g. in, out, back in) into one contiguous dwell
+    span, which is exactly the overcounting this function exists to avoid.
+    """
+    ordered = sorted(pings, key=lambda p: p.recorded_at)
     total = 0.0
-    for a, b in zip(inside, inside[1:]):
+    for a, b in zip(ordered, ordered[1:], strict=False):
+        a_inside = is_within_geofence(a, center_lat=center_lat, center_lon=center_lon, radius_m=radius_m)
+        b_inside = is_within_geofence(b, center_lat=center_lat, center_lon=center_lon, radius_m=radius_m)
+        if not (a_inside and b_inside):
+            continue
         gap = (b.recorded_at - a.recorded_at).total_seconds()
         # A gap far longer than a plausible re-entry (>10min) means the user
         # likely left and came back — don't count the gap itself as dwell.
@@ -70,7 +77,7 @@ def detect_speed_jump(pings: list[GpsPing]) -> list[tuple[GpsPing, GpsPing, floa
     that implies travel faster than IMPOSSIBLE_SPEED_KMH."""
     ordered = sorted(pings, key=lambda p: p.recorded_at)
     anomalies = []
-    for a, b in zip(ordered, ordered[1:]):
+    for a, b in zip(ordered, ordered[1:], strict=False):
         hours = (b.recorded_at - a.recorded_at).total_seconds() / 3600
         if hours <= 0:
             continue

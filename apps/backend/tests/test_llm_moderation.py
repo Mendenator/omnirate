@@ -27,7 +27,11 @@ def test_sampling_is_deterministic_per_review_id():
 
 
 async def test_confident_reject_short_circuits_without_llm_call():
-    result = await moderate_with_llm_or_fallback(review_id="r1", text="новш новш новш")  # high heuristic score
+    # classify_toxicity counts *distinct* matched keyword families present in
+    # the text (existence, not occurrence count) — repeating one word doesn't
+    # raise the score, so this needs two distinct family matches to clear the
+    # 0.93 confident-reject threshold ("новш" and "новшнууд" both match here).
+    result = await moderate_with_llm_or_fallback(review_id="r1", text="чи новшнууд хүн байна")
     assert result.source == "heuristic_confident"
     assert result.cost_usd == 0.0
 

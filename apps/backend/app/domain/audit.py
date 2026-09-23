@@ -10,7 +10,6 @@ the acceptance criterion P3-05 calls "Audit log-ийн мөрийг өөрчлө
 import hashlib
 import json
 import uuid
-from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
