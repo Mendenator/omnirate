@@ -17,7 +17,14 @@ jobs:
     timeout-minutes: 10
     services:
       postgres:
-        image: postgis/postgis:16-3.4
+        # Nothing in app/ actually uses PostGIS types/functions (lat/lon are
+        # plain Numeric columns) — the pgvector extension is what's actually
+        # required (domain/models.py's ReviewEmbedding.embedding column), and
+        # postgis/postgis doesn't ship it, so Base.metadata.create_all() in
+        # tests/conftest.py's `engine` fixture failed on every DB-touching
+        # test ("type vector does not exist") the first time CI actually ran
+        # end to end. pgvector/pgvector is the extension's own official image.
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: omnirate
           POSTGRES_PASSWORD: omnirate
@@ -53,10 +60,10 @@ jobs:
       - name: Check .env.example is in sync with Settings
         run: python scripts/check_env_example.py
 
-      # pg_jsonschema isn't in the stock postgis image used for the CI service
-      # container, so the attribute-validation trigger test runs against a
-      # schema-less DB here and is covered for real in the docker-compose
-      # integration profile (see infra/postgres/Dockerfile).
+      # pg_jsonschema isn't in the stock pgvector/pgvector image used for the
+      # CI service container, so the attribute-validation trigger test runs
+      # against a schema-less DB here and is covered for real in the
+      # docker-compose integration profile (see infra/postgres/Dockerfile).
       - name: Test
         env:
           OMNIRATE_DATABASE_URL: postgresql+asyncpg://omnirate:omnirate@localhost:5432/omnirate

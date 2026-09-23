@@ -3,6 +3,7 @@ import uuid
 import fakeredis
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.core.config import get_settings
@@ -23,6 +24,13 @@ async def engine():
         # pg_jsonschema trigger from the migration — that needs the
         # infra/postgres custom image and is covered by the docker-compose
         # integration profile, not plain CI service containers.
+        #
+        # pgvector, on the other hand, IS required just to create the schema
+        # at all (ReviewEmbedding.embedding is a Vector column) — CREATE
+        # EXTENSION here rather than relying on the image having already run
+        # it, so this also works unchanged against a fresh pgvector/pgvector
+        # service container in CI, not just the local custom image.
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield eng
