@@ -5,7 +5,7 @@
 # source on top of the official PostGIS image. This is the image referenced by
 # infra/terraform/modules/postgres for stage/prod, and by docker-compose.yml
 # for local dev.
-FROM postgis/postgis:16-3.4 AS builder
+FROM postgis/postgis:17-3.5 AS builder
 
 # postgis/postgis:16-3.4 is still Debian 11 (bullseye), which is old enough
 # now that deb.debian.org has dropped it entirely (404s on every package).
@@ -67,7 +67,7 @@ RUN cargo pgrx install --release --pg-config "$(which pg_config)"
 # not the SQL extension it registers (jsonschema_is_valid() etc., used by
 # apps/backend/alembic 0001's trigger) — pg_jsonschema.so /
 # pg_jsonschema.control / pg_jsonschema--0.3.3.sql, all prefixed.
-FROM postgis/postgis:16-3.4
+FROM postgis/postgis:17-3.5
 COPY --from=builder /usr/lib/postgresql/16/lib/pg_jsonschema.so /usr/lib/postgresql/16/lib/
 COPY --from=builder /usr/share/postgresql/16/extension/pg_jsonschema* /usr/share/postgresql/16/extension/
 
