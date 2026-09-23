@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Mendenator/omnirate/security/advisories/new
+    about: Please do not report security vulnerabilities as public issues — see SECURITY.md.
+  - name: Contributing guide
+    url: https://github.com/Mendenator/omnirate/blob/master/CONTRIBUTING.md
+    about: Read this before opening a PR.

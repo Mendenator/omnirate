@@ -1,0 +1,62 @@
+name: Feature request
+description: Suggest an idea or improvement for OmniRate.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, check [`docs/PROGRESS.md`](../../docs/PROGRESS.md) —
+        this may already be planned as part of the SOW task breakdown
+        (P0–P3, S-01…S-20).
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Area
+      options:
+        - backend (apps/backend)
+        - web (apps/web)
+        - mobile (apps/mobile)
+        - infra (docker-compose / infra/)
+        - docs
+        - other / not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What's the gap or pain point today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to see happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+
+  - type: input
+    id: sow-task
+    attributes:
+      label: Related SOW task ID (if any)
+      placeholder: e.g. S-13
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+    validations:
+      required: false
