@@ -1,5 +1,7 @@
 # OmniRate
 
+[![GitHub](https://img.shields.io/badge/GitHub-Mendenator%2Fomnirate-181717?logo=github)](https://github.com/Mendenator/omnirate)
+
 Polymorphic Rating & Proof-of-Experience Engine — монорепо.
 
 Хэрэгжилт нь [`OmniRate SOW v2.md`](./OmniRate%20SOW%20v2.md) баримтад заасан даалгаврын задаргаагаар явна (P0 → P1 → P2 → P3, S-01…S-20). Ажлын явцын бүртгэл: [`docs/PROGRESS.md`](./docs/PROGRESS.md).
