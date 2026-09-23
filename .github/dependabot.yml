@@ -1,0 +1,72 @@
+version: 2
+
+updates:
+  # Backend (FastAPI) — Python deps
+  - package-ecosystem: "pip"
+    directory: "/apps/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "backend"]
+    commit-message:
+      prefix: "chore(backend)"
+    groups:
+      backend-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Web (Next.js) — npm deps
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "web"]
+    commit-message:
+      prefix: "chore(web)"
+    groups:
+      web-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Mobile (Expo / React Native) — npm deps.
+  # Expo pins exact minor versions per SDK (e.g. "~52.0.0"); grouping still
+  # helps for the many small transitive bumps, but major/SDK bumps should be
+  # reviewed manually rather than auto-merged (RN/Expo majors are rarely
+  # drop-in — see docs/PROGRESS.md's note on the 25 tracked mobile advisories
+  # that need a full SDK upgrade, not a patch).
+  - package-ecosystem: "npm"
+    directory: "/apps/mobile"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "mobile"]
+    commit-message:
+      prefix: "chore(mobile)"
+    groups:
+      mobile-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Docker base images
+  - package-ecosystem: "docker"
+    directory: "/apps/backend"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+
+  - package-ecosystem: "docker"
+    directory: "/infra/postgres"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+
+  # GitHub Actions used in .github/workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "chore(ci)"
