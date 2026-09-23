@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 # Definition of Done (SOW §3.2): CI must complete in ≤10 min.
 concurrency:
