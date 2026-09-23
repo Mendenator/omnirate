@@ -47,7 +47,15 @@ async def search(
     must: list[dict] = []
     if q:
         variants = build_query_variants(q)
-        must.append({"bool": {"should": [{"match": {"name": v}} for v in variants] + [{"match": {"name_folded": v}} for v in variants], "minimum_should_match": 1}})
+        must.append(
+            {
+                "bool": {
+                    "should": [{"match": {"name": v}} for v in variants]
+                    + [{"match": {"name_folded": v}} for v in variants],
+                    "minimum_should_match": 1,
+                }
+            }
+        )
     if branch_slug:
         must.append({"term": {"branch_slug": branch_slug}})
     if category_slug:

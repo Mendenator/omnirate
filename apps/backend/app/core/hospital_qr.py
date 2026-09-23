@@ -52,7 +52,10 @@ def generate_hospital_qr(entity_id: str) -> str:
     settings = get_settings()
     now = int(time.time())
     payload = HospitalQrPayload(
-        entity_id=entity_id, jti=str(uuid.uuid4()), issued_at=now, expires_at=now + settings.hospital_qr_ttl_hours * 3600
+        entity_id=entity_id,
+        jti=str(uuid.uuid4()),
+        issued_at=now,
+        expires_at=now + settings.hospital_qr_ttl_hours * 3600,
     )
     payload_bytes = json.dumps(payload.__dict__, separators=(",", ":")).encode()
     signature = _get_private_key().sign(payload_bytes)

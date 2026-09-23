@@ -36,7 +36,9 @@ async def claim_entity(
 
     # Acceptance: 100% of TTD-mismatched claims rejected before a row exists.
     if entity.ttd is None or req.ttd != entity.ttd:
-        raise HTTPException(status_code=422, detail={"reason_code": "ttd_mismatch", "message": "TTD does not match entity"})
+        raise HTTPException(
+            status_code=422, detail={"reason_code": "ttd_mismatch", "message": "TTD does not match entity"}
+        )
 
     owner = EntityOwner(entity_id=entity.id, user_id=user.user_id)
     db.add(owner)

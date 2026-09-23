@@ -24,7 +24,9 @@ async def test_report_counts_takedowns_and_complaints_in_period(db_session):
     reporter_id = await _seed_user(db_session)
 
     db_session.add(
-        Complaint(reporter_id=reporter_id, target_type="review", target_id=uuid.uuid4(), reason="spam", status="resolved")
+        Complaint(
+            reporter_id=reporter_id, target_type="review", target_id=uuid.uuid4(), reason="spam", status="resolved"
+        )
     )
     db_session.add(
         TakedownRequest(
@@ -90,8 +92,14 @@ def test_render_markdown_includes_all_fields():
     from app.analytics.transparency_report import TransparencyReport
 
     report = TransparencyReport(
-        period="2026-09", reviews_deleted=3, reviews_restored=1, complaints_received=5, complaints_resolved=4,
-        takedowns_received=2, takedowns_resolved=1, takedowns_rejected=1,
+        period="2026-09",
+        reviews_deleted=3,
+        reviews_restored=1,
+        complaints_received=5,
+        complaints_resolved=4,
+        takedowns_received=2,
+        takedowns_resolved=1,
+        takedowns_rejected=1,
     )
     md = render_markdown(report)
     assert "2026-09" in md

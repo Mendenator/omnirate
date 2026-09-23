@@ -62,7 +62,9 @@ def _sleeper_review() -> FraudFeatures:
     )
 
 
-def generate_synthetic_dataset(*, n_normal: int = 4000, n_bombing: int = 500, n_sleeper: int = 500) -> tuple[list[list[float]], list[int]]:
+def generate_synthetic_dataset(
+    *, n_normal: int = 4000, n_bombing: int = 500, n_sleeper: int = 500
+) -> tuple[list[list[float]], list[int]]:
     rows: list[list[float]] = []
     labels: list[int] = []
 

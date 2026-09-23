@@ -34,7 +34,9 @@ def upgrade() -> None:
     op.create_table(
         "moderation_decisions",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
-        sa.Column("case_id", UUID(as_uuid=True), sa.ForeignKey("moderation_cases.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "case_id", UUID(as_uuid=True), sa.ForeignKey("moderation_cases.id", ondelete="CASCADE"), nullable=False
+        ),
         sa.Column("moderator_id", UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
         sa.Column("verdict", sa.String(16), nullable=False),
         sa.Column("decided_at", sa.DateTime(timezone=True), server_default=sa.func.now()),

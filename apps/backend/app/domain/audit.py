@@ -19,7 +19,13 @@ from app.domain.models import AuditLog
 
 def _row_hash(*, prev_hash: str | None, action: str, target_type: str, target_id: str, payload: dict) -> str:
     canonical = json.dumps(
-        {"prev_hash": prev_hash, "action": action, "target_type": target_type, "target_id": target_id, "payload": payload},
+        {
+            "prev_hash": prev_hash,
+            "action": action,
+            "target_type": target_type,
+            "target_id": target_id,
+            "payload": payload,
+        },
         sort_keys=True,
         default=str,
     )
@@ -32,7 +38,9 @@ async def append_audit_log(
     last = await db.scalar(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(1))
     prev_hash = last.row_hash if last else None
 
-    row_hash = _row_hash(prev_hash=prev_hash, action=action, target_type=target_type, target_id=target_id, payload=payload)
+    row_hash = _row_hash(
+        prev_hash=prev_hash, action=action, target_type=target_type, target_id=target_id, payload=payload
+    )
     entry = AuditLog(
         actor_id=actor_id,
         action=action,

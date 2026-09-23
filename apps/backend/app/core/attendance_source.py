@@ -34,7 +34,9 @@ async def fetch_attendance_records(source_url: str | None = None) -> list[Attend
 
     return [
         AttendanceRecord(
-            politician_external_id=row["politician_id"], period=row["period"], attendance_pct=float(row["attendance_pct"])
+            politician_external_id=row["politician_id"],
+            period=row["period"],
+            attendance_pct=float(row["attendance_pct"]),
         )
         for row in body["records"]
     ]

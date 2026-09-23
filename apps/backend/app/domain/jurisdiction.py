@@ -29,7 +29,9 @@ def validate_full_coverage(mapping: dict[str, str], all_khoroo_slugs: set[str]) 
     return sorted(all_khoroo_slugs - mapping.keys())
 
 
-def jurisdiction_match(*, reviewer_khoroo_slug: str | None, entity_tovrog_slug: str | None, mapping: dict[str, str]) -> bool:
+def jurisdiction_match(
+    *, reviewer_khoroo_slug: str | None, entity_tovrog_slug: str | None, mapping: dict[str, str]
+) -> bool:
     if reviewer_khoroo_slug is None or entity_tovrog_slug is None:
         return False
     return mapping.get(reviewer_khoroo_slug) == entity_tovrog_slug

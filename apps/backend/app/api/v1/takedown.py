@@ -56,7 +56,11 @@ async def create_takedown(
     db.add(takedown)
     await db.flush()
     await append_audit_log(
-        db, actor_id=user.user_id, action="takedown.create", target_type=req.target_type, target_id=req.target_id,
+        db,
+        actor_id=user.user_id,
+        action="takedown.create",
+        target_type=req.target_type,
+        target_id=req.target_id,
         payload={"takedown_id": str(takedown.id), "requester_type": "user"},
     )
     await db.commit()
@@ -84,8 +88,16 @@ async def create_law_enforcement_request(
     db.add(takedown)
     await db.flush()
     await append_audit_log(
-        db, actor_id=user.user_id, action="takedown.create", target_type=req.target_type, target_id=req.target_id,
-        payload={"takedown_id": str(takedown.id), "requester_type": "law_enforcement", "case_reference": req.case_reference},
+        db,
+        actor_id=user.user_id,
+        action="takedown.create",
+        target_type=req.target_type,
+        target_id=req.target_id,
+        payload={
+            "takedown_id": str(takedown.id),
+            "requester_type": "law_enforcement",
+            "case_reference": req.case_reference,
+        },
     )
     await db.commit()
     return takedown
@@ -97,7 +109,10 @@ class ResolveTakedownRequest(BaseModel):
 
 @router.post("/takedowns/{takedown_id}/resolve", response_model=TakedownResponse)
 async def resolve_takedown(
-    takedown_id: str, req: ResolveTakedownRequest, db: AsyncSession = Depends(get_db), user: CurrentUser = Depends(get_current_user)
+    takedown_id: str,
+    req: ResolveTakedownRequest,
+    db: AsyncSession = Depends(get_db),
+    user: CurrentUser = Depends(get_current_user),
 ):
     takedown = await db.get(TakedownRequest, takedown_id)
     if takedown is None:
@@ -108,8 +123,12 @@ async def resolve_takedown(
     takedown.status = req.status
     takedown.resolved_at = datetime.now(UTC)
     await append_audit_log(
-        db, actor_id=user.user_id, action="takedown.resolve", target_type=takedown.target_type,
-        target_id=str(takedown.target_id), payload={"takedown_id": takedown_id, "status": req.status},
+        db,
+        actor_id=user.user_id,
+        action="takedown.resolve",
+        target_type=takedown.target_type,
+        target_id=str(takedown.target_id),
+        payload={"takedown_id": takedown_id, "status": req.status},
     )
     await db.commit()
     return takedown

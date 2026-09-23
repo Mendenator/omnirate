@@ -17,9 +17,7 @@ async def _publish(client, version=1, json_schema=None, search_config=None, disp
             "search_config": search_config
             if search_config is not None
             else {
-                "facets": [
-                    {"field": "cuisine", "type": "multi", "label_mn": "Хоолны төрөл", "order": 1}
-                ],
+                "facets": [{"field": "cuisine", "type": "multi", "label_mn": "Хоолны төрөл", "order": 1}],
                 "synonyms": ["ресторан, зоогийн газар"],
                 "default_sort": "relevance",
             },

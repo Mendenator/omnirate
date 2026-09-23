@@ -16,7 +16,9 @@ def connect() -> duckdb.DuckDBPyConnection:
     return con
 
 
-def daily_review_counts_by_poe_level(con: duckdb.DuckDBPyConnection, *, since_date: str, bucket: str | None = None) -> list[tuple]:
+def daily_review_counts_by_poe_level(
+    con: duckdb.DuckDBPyConnection, *, since_date: str, bucket: str | None = None
+) -> list[tuple]:
     bucket = bucket or get_settings().analytics_bucket
     return con.execute(
         f"""

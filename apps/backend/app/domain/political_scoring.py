@@ -35,11 +35,15 @@ def compute_jurisdiction_separated_scores(
     out_juris = [r.review for r in reviews if not r.is_in_jurisdiction]
 
     return JurisdictionScores(
-        in_jurisdiction_score=compute_bayesian_trimmed_score(in_juris, prior_mean=prior_mean, prior_confidence=prior_confidence)
+        in_jurisdiction_score=compute_bayesian_trimmed_score(
+            in_juris, prior_mean=prior_mean, prior_confidence=prior_confidence
+        )
         if in_juris
         else None,
         in_jurisdiction_count=len(in_juris),
-        out_of_jurisdiction_score=compute_bayesian_trimmed_score(out_juris, prior_mean=prior_mean, prior_confidence=prior_confidence)
+        out_of_jurisdiction_score=compute_bayesian_trimmed_score(
+            out_juris, prior_mean=prior_mean, prior_confidence=prior_confidence
+        )
         if out_juris
         else None,
         out_of_jurisdiction_count=len(out_juris),

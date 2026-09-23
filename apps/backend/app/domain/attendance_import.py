@@ -20,7 +20,9 @@ async def import_attendance(db: AsyncSession, *, source_url: str | None = None) 
     # driven, see docs/politician_schema.sample.json), not a dedicated column.
     entities = (await db.execute(select(Entity).where(Entity.category_slug == "uikh-gishuun"))).scalars().all()
     external_id_to_entity: dict[str, str] = {
-        e.attributes.get("politician_external_id"): str(e.id) for e in entities if e.attributes.get("politician_external_id")
+        e.attributes.get("politician_external_id"): str(e.id)
+        for e in entities
+        if e.attributes.get("politician_external_id")
     }
 
     matched, unmatched = 0, 0

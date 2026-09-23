@@ -40,7 +40,9 @@ async def reindex_entity(ctx, entity_id: str) -> None:
         n_verified = sum(1 for r in reviews if counts_as_verified(r.poe_level))
         score = compute_bayesian_trimmed_score(
             [
-                ScoredReview(overall_score=float(r.overall_score), poe_level=r.poe_level, fraud_score=float(r.fraud_score))
+                ScoredReview(
+                    overall_score=float(r.overall_score), poe_level=r.poe_level, fraud_score=float(r.fraud_score)
+                )
                 for r in reviews
             ],
             prior_mean=CATEGORY_PRIOR_MEAN,

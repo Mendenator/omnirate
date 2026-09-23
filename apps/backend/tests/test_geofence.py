@@ -14,7 +14,13 @@ UB_CENTER = (47.9184, 106.9177)  # Ulaanbaatar city center, used as a stable ref
 
 def _ping(lat, lon, minutes_offset, accuracy=8.0, is_mock=False, base=None):
     base = base or datetime(2026, 9, 22, 12, 0, 0)
-    return GpsPing(lat=lat, lon=lon, accuracy_m=accuracy, is_mock_provider_flag=is_mock, recorded_at=base + timedelta(minutes=minutes_offset))
+    return GpsPing(
+        lat=lat,
+        lon=lon,
+        accuracy_m=accuracy,
+        is_mock_provider_flag=is_mock,
+        recorded_at=base + timedelta(minutes=minutes_offset),
+    )
 
 
 def test_haversine_zero_distance_for_identical_points():
@@ -30,7 +36,9 @@ def test_haversine_known_distance_ub_to_darkhan_roughly_correct():
 
 
 def test_is_within_geofence_true_for_center_point():
-    assert is_within_geofence(_ping(*UB_CENTER, 0), center_lat=UB_CENTER[0], center_lon=UB_CENTER[1], radius_m=50) is True
+    assert (
+        is_within_geofence(_ping(*UB_CENTER, 0), center_lat=UB_CENTER[0], center_lon=UB_CENTER[1], radius_m=50) is True
+    )
 
 
 def test_is_within_geofence_false_for_far_point():

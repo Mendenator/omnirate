@@ -72,7 +72,9 @@ async def dan_callback(req: DanCallbackRequest, db: AsyncSession = Depends(get_d
 
     user = await db.scalar(select(User).where(User.rd_hash == rd_hash))
     if user is None:
-        user = User(id=uuid.uuid4(), rd_hash=rd_hash, display_name=identity.get("name", "OmniRate user"), poe_level="L2")
+        user = User(
+            id=uuid.uuid4(), rd_hash=rd_hash, display_name=identity.get("name", "OmniRate user"), poe_level="L2"
+        )
         db.add(user)
         await db.commit()
         await db.refresh(user)

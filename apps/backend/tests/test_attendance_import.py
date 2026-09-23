@@ -32,7 +32,9 @@ async def test_import_matches_records_to_entities_by_external_id(db_session):
 
     from sqlalchemy import select
 
-    row = (await db_session.execute(select(PoliticianAttendance).where(PoliticianAttendance.entity_id == entity_id))).scalar_one()
+    row = (
+        await db_session.execute(select(PoliticianAttendance).where(PoliticianAttendance.entity_id == entity_id))
+    ).scalar_one()
     assert float(row.attendance_pct) == 87.5
 
 
@@ -62,6 +64,10 @@ async def test_reimport_same_period_updates_rather_than_duplicates(db_session):
 
     from sqlalchemy import select
 
-    rows = (await db_session.execute(select(PoliticianAttendance).where(PoliticianAttendance.entity_id == entity_id))).scalars().all()
+    rows = (
+        (await db_session.execute(select(PoliticianAttendance).where(PoliticianAttendance.entity_id == entity_id)))
+        .scalars()
+        .all()
+    )
     assert len(rows) == 1
     assert float(rows[0].attendance_pct) == 95.0

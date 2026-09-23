@@ -34,13 +34,17 @@ class CaseResponse(BaseModel):
 @router.get("/queue", response_model=list[CaseResponse])
 async def list_queue(db: AsyncSession = Depends(get_db)):
     cases = (
-        await db.execute(
-            select(ModerationCase)
-            .where(ModerationCase.state.in_(["awaiting_first_decision", "awaiting_second_decision"]))
-            .order_by(ModerationCase.created_at)
-            .limit(50)
+        (
+            await db.execute(
+                select(ModerationCase)
+                .where(ModerationCase.state.in_(["awaiting_first_decision", "awaiting_second_decision"]))
+                .order_by(ModerationCase.created_at)
+                .limit(50)
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     return cases
 
 
@@ -67,8 +71,16 @@ async def decide_case(
         raise HTTPException(status_code=409, detail="this moderator already decided this case") from exc
 
     existing = (
-        await db.execute(select(ModerationDecision).where(ModerationDecision.case_id == case.id).order_by(ModerationDecision.decided_at))
-    ).scalars().all()
+        (
+            await db.execute(
+                select(ModerationDecision)
+                .where(ModerationDecision.case_id == case.id)
+                .order_by(ModerationDecision.decided_at)
+            )
+        )
+        .scalars()
+        .all()
+    )
     domain_decisions = [Decision(moderator_id=str(d.moderator_id), verdict=Verdict(d.verdict)) for d in existing]
 
     outcome = resolve_case(domain_decisions)

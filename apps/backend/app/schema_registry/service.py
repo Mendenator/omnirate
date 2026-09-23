@@ -56,9 +56,7 @@ def _validate_config_block(name: str, value: dict, meta_schema: dict) -> None:
         raise HTTPException(status_code=422, detail=f"invalid {name}: {exc.message}") from exc
 
 
-async def publish_category_schema(
-    db: AsyncSession, req: CategorySchemaPublishRequest
-) -> SchemaRegistryEntry:
+async def publish_category_schema(db: AsyncSession, req: CategorySchemaPublishRequest) -> SchemaRegistryEntry:
     _validate_json_schema_itself(req.json_schema)
     _validate_config_block("search_config", req.search_config, _SEARCH_CONFIG_META_SCHEMA)
     _validate_config_block("display_config", req.display_config, _DISPLAY_CONFIG_META_SCHEMA)

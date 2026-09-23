@@ -43,7 +43,10 @@ def test_bombing_attack_moves_target_at_most_two_ranks():
     }
 
     baseline_scores = {
-        eid: _entity_rank(compute_bayesian_trimmed_score(reviews, prior_mean=PRIOR_MEAN, prior_confidence=PRIOR_CONFIDENCE), len(reviews))
+        eid: _entity_rank(
+            compute_bayesian_trimmed_score(reviews, prior_mean=PRIOR_MEAN, prior_confidence=PRIOR_CONFIDENCE),
+            len(reviews),
+        )
         for eid, reviews in baseline_reviews.items()
     }
     baseline_positions = _positions(baseline_scores)
@@ -56,10 +59,14 @@ def test_bombing_attack_moves_target_at_most_two_ranks():
     # asserts the *consequence* of that flagging on rank, not the detector.
     bombed_reviews = {
         **baseline_reviews,
-        "e1": baseline_reviews["e1"] + [ScoredReview(overall_score=1.0, poe_level="L1", fraud_score=0.95) for _ in range(200)],
+        "e1": baseline_reviews["e1"]
+        + [ScoredReview(overall_score=1.0, poe_level="L1", fraud_score=0.95) for _ in range(200)],
     }
     bombed_scores = {
-        eid: _entity_rank(compute_bayesian_trimmed_score(reviews, prior_mean=PRIOR_MEAN, prior_confidence=PRIOR_CONFIDENCE), len(reviews))
+        eid: _entity_rank(
+            compute_bayesian_trimmed_score(reviews, prior_mean=PRIOR_MEAN, prior_confidence=PRIOR_CONFIDENCE),
+            len(reviews),
+        )
         for eid, reviews in bombed_reviews.items()
     }
     bombed_positions = _positions(bombed_scores)
@@ -74,7 +81,11 @@ def test_unflagged_low_quality_reviews_do_still_affect_rank():
     clean = [ScoredReview(overall_score=4.8, poe_level="L4", fraud_score=0.0) for _ in range(15)]
     clean_score = compute_bayesian_trimmed_score(clean, prior_mean=PRIOR_MEAN, prior_confidence=PRIOR_CONFIDENCE)
 
-    with_genuine_negatives = clean + [ScoredReview(overall_score=1.0, poe_level="L4", fraud_score=0.0) for _ in range(15)]
-    negative_score = compute_bayesian_trimmed_score(with_genuine_negatives, prior_mean=PRIOR_MEAN, prior_confidence=PRIOR_CONFIDENCE)
+    with_genuine_negatives = clean + [
+        ScoredReview(overall_score=1.0, poe_level="L4", fraud_score=0.0) for _ in range(15)
+    ]
+    negative_score = compute_bayesian_trimmed_score(
+        with_genuine_negatives, prior_mean=PRIOR_MEAN, prior_confidence=PRIOR_CONFIDENCE
+    )
 
     assert negative_score < clean_score

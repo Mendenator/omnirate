@@ -116,15 +116,26 @@ async def attach_gps_evidence(
 
     entity = await db.get(Entity, review.entity_id)
     if entity.lat is None or entity.lon is None:
-        raise HTTPException(status_code=422, detail={"reason_code": "no_entity_location", "message": "entity has no geofence center"})
+        raise HTTPException(
+            status_code=422, detail={"reason_code": "no_entity_location", "message": "entity has no geofence center"}
+        )
 
     domain_pings = [
-        GpsPing(lat=p.lat, lon=p.lon, accuracy_m=p.accuracy_m, is_mock_provider_flag=p.is_mock_provider_flag, recorded_at=p.recorded_at)
+        GpsPing(
+            lat=p.lat,
+            lon=p.lon,
+            accuracy_m=p.accuracy_m,
+            is_mock_provider_flag=p.is_mock_provider_flag,
+            recorded_at=p.recorded_at,
+        )
         for p in req.pings
     ]
 
     if detect_mock_location(domain_pings):
-        raise HTTPException(status_code=422, detail={"reason_code": "mock_location_detected", "message": "GPS trail failed spoofing checks"})
+        raise HTTPException(
+            status_code=422,
+            detail={"reason_code": "mock_location_detected", "message": "GPS trail failed spoofing checks"},
+        )
 
     dwell_seconds = compute_dwell_seconds(
         domain_pings, center_lat=float(entity.lat), center_lon=float(entity.lon), radius_m=GEOFENCE_RADIUS_M
@@ -146,7 +157,10 @@ async def attach_gps_evidence(
         await db.commit()
         raise HTTPException(
             status_code=422,
-            detail={"reason_code": "insufficient_dwell_time", "message": f"only {dwell_seconds:.0f}s in geofence, need {MIN_DWELL_SECONDS_FOR_L2}s"},
+            detail={
+                "reason_code": "insufficient_dwell_time",
+                "message": f"only {dwell_seconds:.0f}s in geofence, need {MIN_DWELL_SECONDS_FOR_L2}s",
+            },
         )
 
     db.add(PoeEvidence(review_id=review.id, kind="gps", payload={"dwell_seconds": dwell_seconds}))

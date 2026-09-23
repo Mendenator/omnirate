@@ -56,9 +56,7 @@ class SchemaRegistryEntry(Base):
     display_config: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    __table_args__ = (
-        UniqueConstraint("category_slug", "version", name="uq_schema_category_version"),
-    )
+    __table_args__ = (UniqueConstraint("category_slug", "version", name="uq_schema_category_version"),)
 
 
 class Entity(Base):
@@ -121,9 +119,7 @@ class PoeEvidence(Base):
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    __table_args__ = (
-        CheckConstraint("kind IN ('e_barimt', 'gps', 'ocr_receipt')", name="ck_poe_evidence_kind"),
-    )
+    __table_args__ = (CheckConstraint("kind IN ('e_barimt', 'gps', 'ocr_receipt')", name="ck_poe_evidence_kind"),)
 
 
 class IdempotencyKey(Base):
@@ -226,9 +222,7 @@ class ReviewEmbedding(Base):
 
     __tablename__ = "review_embeddings"
 
-    review_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("reviews.id", ondelete="CASCADE"), primary_key=True
-    )
+    review_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("reviews.id", ondelete="CASCADE"), primary_key=True)
     embedding: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIM), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

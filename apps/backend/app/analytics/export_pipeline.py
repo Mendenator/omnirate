@@ -40,9 +40,7 @@ def _connect(settings) -> duckdb.DuckDBPyConnection:
 
 
 def _read_watermark(con: duckdb.DuckDBPyConnection, table: str) -> datetime:
-    row = con.execute(
-        "SELECT watermark FROM pg.analytics_export_state WHERE table_name = ?", [table]
-    ).fetchone()
+    row = con.execute("SELECT watermark FROM pg.analytics_export_state WHERE table_name = ?", [table]).fetchone()
     return row[0] if row else datetime(1970, 1, 1, tzinfo=UTC)
 
 

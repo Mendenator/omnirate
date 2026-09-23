@@ -29,38 +29,48 @@ class TransparencyReport:
     takedowns_rejected: int
 
 
-async def generate_monthly_report(db: AsyncSession, *, period_start: datetime, period_end: datetime) -> TransparencyReport:
+async def generate_monthly_report(
+    db: AsyncSession, *, period_start: datetime, period_end: datetime
+) -> TransparencyReport:
     reviews_deleted = await db.scalar(
-        select(func.count()).select_from(Review).where(
-            Review.is_blocked.is_(True), Review.created_at >= period_start, Review.created_at < period_end
-        )
+        select(func.count())
+        .select_from(Review)
+        .where(Review.is_blocked.is_(True), Review.created_at >= period_start, Review.created_at < period_end)
     )
 
     takedowns_received = await db.scalar(
-        select(func.count()).select_from(TakedownRequest).where(
-            TakedownRequest.created_at >= period_start, TakedownRequest.created_at < period_end
-        )
+        select(func.count())
+        .select_from(TakedownRequest)
+        .where(TakedownRequest.created_at >= period_start, TakedownRequest.created_at < period_end)
     )
     takedowns_resolved = await db.scalar(
-        select(func.count()).select_from(TakedownRequest).where(
-            TakedownRequest.status == "resolved", TakedownRequest.resolved_at >= period_start, TakedownRequest.resolved_at < period_end
+        select(func.count())
+        .select_from(TakedownRequest)
+        .where(
+            TakedownRequest.status == "resolved",
+            TakedownRequest.resolved_at >= period_start,
+            TakedownRequest.resolved_at < period_end,
         )
     )
     takedowns_rejected = await db.scalar(
-        select(func.count()).select_from(TakedownRequest).where(
-            TakedownRequest.status == "rejected", TakedownRequest.resolved_at >= period_start, TakedownRequest.resolved_at < period_end
+        select(func.count())
+        .select_from(TakedownRequest)
+        .where(
+            TakedownRequest.status == "rejected",
+            TakedownRequest.resolved_at >= period_start,
+            TakedownRequest.resolved_at < period_end,
         )
     )
 
     complaints_received = await db.scalar(
-        select(func.count()).select_from(Complaint).where(
-            Complaint.created_at >= period_start, Complaint.created_at < period_end
-        )
+        select(func.count())
+        .select_from(Complaint)
+        .where(Complaint.created_at >= period_start, Complaint.created_at < period_end)
     )
     complaints_resolved = await db.scalar(
-        select(func.count()).select_from(Complaint).where(
-            Complaint.status == "resolved", Complaint.created_at >= period_start, Complaint.created_at < period_end
-        )
+        select(func.count())
+        .select_from(Complaint)
+        .where(Complaint.status == "resolved", Complaint.created_at >= period_start, Complaint.created_at < period_end)
     )
 
     return TransparencyReport(

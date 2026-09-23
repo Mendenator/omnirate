@@ -55,7 +55,9 @@ async def client(engine):
     # against real Postgres for the first time.
     async with session_factory() as seed_session:
         seed_session.add(
-            User(id=fake_user.user_id, rd_hash=fake_user.rd_hash, display_name="Test User", poe_level=fake_user.poe_level)
+            User(
+                id=fake_user.user_id, rd_hash=fake_user.rd_hash, display_name="Test User", poe_level=fake_user.poe_level
+            )
         )
         await seed_session.commit()
 

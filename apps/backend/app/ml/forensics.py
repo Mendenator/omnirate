@@ -36,11 +36,7 @@ def compute_phash(image_bytes: bytes) -> imagehash.ImageHash:
 
 
 def find_duplicates(phash: imagehash.ImageHash, known_hashes: dict[str, imagehash.ImageHash]) -> list[str]:
-    return [
-        receipt_id
-        for receipt_id, other in known_hashes.items()
-        if (phash - other) <= DUPLICATE_HAMMING_THRESHOLD
-    ]
+    return [receipt_id for receipt_id, other in known_hashes.items() if (phash - other) <= DUPLICATE_HAMMING_THRESHOLD]
 
 
 def compute_ela_mean_diff(image_bytes: bytes) -> float:

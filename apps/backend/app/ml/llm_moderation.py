@@ -88,18 +88,44 @@ async def moderate_with_llm_or_fallback(*, review_id: str, text: str) -> LlmMode
     heuristic = classify_toxicity(text)
 
     if heuristic.toxicity_score >= CONFIDENT_REJECT_THRESHOLD:
-        return LlmModerationResult(verdict="reject", reason="heuristic confident reject", confidence=heuristic.toxicity_score, cost_usd=0.0, source="heuristic_confident")
+        return LlmModerationResult(
+            verdict="reject",
+            reason="heuristic confident reject",
+            confidence=heuristic.toxicity_score,
+            cost_usd=0.0,
+            source="heuristic_confident",
+        )
     if heuristic.toxicity_score < CONFIDENT_APPROVE_THRESHOLD:
-        return LlmModerationResult(verdict="approve", reason="heuristic confident approve", confidence=1 - heuristic.toxicity_score, cost_usd=0.0, source="heuristic_confident")
+        return LlmModerationResult(
+            verdict="approve",
+            reason="heuristic confident approve",
+            confidence=1 - heuristic.toxicity_score,
+            cost_usd=0.0,
+            source="heuristic_confident",
+        )
 
     if not should_route_to_llm(review_id, heuristic):
         # Borderline but not sampled into the LLM path -> defer to a human
         # (P2-12's moderator queue), never auto-approve/reject an unclear case.
-        return LlmModerationResult(verdict="needs_human_review", reason="borderline, not LLM-sampled", confidence=heuristic.toxicity_score, cost_usd=0.0, source="heuristic_fallback")
+        return LlmModerationResult(
+            verdict="needs_human_review",
+            reason="borderline, not LLM-sampled",
+            confidence=heuristic.toxicity_score,
+            cost_usd=0.0,
+            source="heuristic_fallback",
+        )
 
     try:
         raw, cost_usd = await _call_llm(text)
         jsonschema.validate(raw, _LLM_RESPONSE_SCHEMA)
-        return LlmModerationResult(verdict=raw["verdict"], reason=raw["reason"], confidence=raw["confidence"], cost_usd=cost_usd, source="llm")
+        return LlmModerationResult(
+            verdict=raw["verdict"], reason=raw["reason"], confidence=raw["confidence"], cost_usd=cost_usd, source="llm"
+        )
     except (NotImplementedError, httpx.HTTPError, jsonschema.ValidationError, json.JSONDecodeError):
-        return LlmModerationResult(verdict="needs_human_review", reason="LLM call failed, deferring to human", confidence=heuristic.toxicity_score, cost_usd=0.0, source="heuristic_fallback")
+        return LlmModerationResult(
+            verdict="needs_human_review",
+            reason="LLM call failed, deferring to human",
+            confidence=heuristic.toxicity_score,
+            cost_usd=0.0,
+            source="heuristic_fallback",
+        )
