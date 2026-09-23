@@ -50,6 +50,9 @@ jobs:
       - name: Type check (mypy)
         run: mypy app
 
+      - name: Check .env.example is in sync with Settings
+        run: python scripts/check_env_example.py
+
       # pg_jsonschema isn't in the stock postgis image used for the CI service
       # container, so the attribute-validation trigger test runs against a
       # schema-less DB here and is covered for real in the docker-compose
