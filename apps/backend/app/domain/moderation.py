@@ -18,7 +18,7 @@ _PHONE_PATTERN = re.compile(r"(?:\+?976|00976)?[\s-]?\b\d{8}\b")
 
 _EMAIL_PATTERN = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
 
-PII_PATTERNS: dict[str, re.Pattern] = {
+PII_PATTERNS: dict[str, re.Pattern[str]] = {
     "rd": _RD_PATTERN,
     "phone": _PHONE_PATTERN,
     "email": _EMAIL_PATTERN,

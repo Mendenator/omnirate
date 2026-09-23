@@ -25,6 +25,7 @@ import base64
 import hashlib
 import secrets
 from dataclasses import dataclass
+from typing import Any
 
 import httpx
 
@@ -53,7 +54,7 @@ def build_authorize_url(*, redirect_uri: str, state: str, pkce: PkcePair) -> str
     )
 
 
-async def exchange_code_for_dan_identity(*, code: str, verifier: str, redirect_uri: str) -> dict:
+async def exchange_code_for_dan_identity(*, code: str, verifier: str, redirect_uri: str) -> dict[str, Any]:
     """Returns the ДАН identity payload, expected shape: {"rd": "<raw national id>", "name": str}.
 
     Callers must call `app.core.security.hash_rd` on `rd` immediately and never
@@ -72,4 +73,5 @@ async def exchange_code_for_dan_identity(*, code: str, verifier: str, redirect_u
             },
         )
         resp.raise_for_status()
-        return resp.json()
+        body: dict[str, Any] = resp.json()
+        return body

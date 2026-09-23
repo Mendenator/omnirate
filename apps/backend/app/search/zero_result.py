@@ -22,7 +22,7 @@ class SearchParams:
     q: str | None = None
     branch_slug: str | None = None
     category_slug: str | None = None
-    facets: dict = field(default_factory=dict)
+    facets: dict[str, str] = field(default_factory=dict)
 
 
 def relax_query(params: SearchParams) -> SearchParams | None:

@@ -11,6 +11,7 @@
 
 import uuid
 from datetime import datetime
+from typing import Any
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
@@ -51,9 +52,9 @@ class SchemaRegistryEntry(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     category_slug: Mapped[str] = mapped_column(String(128), nullable=False)
     version: Mapped[int] = mapped_column(nullable=False)
-    json_schema: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    search_config: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
-    display_config: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    json_schema: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    search_config: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    display_config: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (UniqueConstraint("category_slug", "version", name="uq_schema_category_version"),)
@@ -71,7 +72,7 @@ class Entity(Base):
     location_slug: Mapped[str | None] = mapped_column(String(255))
     lat: Mapped[float | None] = mapped_column(Numeric(9, 6))
     lon: Mapped[float | None] = mapped_column(Numeric(9, 6))
-    attributes: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    attributes: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     verified: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -91,7 +92,7 @@ class Review(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     poe_level: Mapped[str] = mapped_column(String(2), nullable=False, default="L0")
     overall_score: Mapped[float] = mapped_column(Numeric(3, 2), nullable=False)
-    criteria_scores: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    criteria_scores: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     body: Mapped[str | None] = mapped_column(String(4000))
     fraud_score: Mapped[float] = mapped_column(Numeric(4, 3), nullable=False, default=0)
     owner_reply_body: Mapped[str | None] = mapped_column(String(2000))
@@ -116,7 +117,7 @@ class PoeEvidence(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     review_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("reviews.id", ondelete="CASCADE"), nullable=False)
     kind: Mapped[str] = mapped_column(String(32), nullable=False)  # e_barimt | gps | ocr_receipt
-    payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (CheckConstraint("kind IN ('e_barimt', 'gps', 'ocr_receipt')", name="ck_poe_evidence_kind"),)
@@ -128,7 +129,7 @@ class IdempotencyKey(Base):
     key: Mapped[str] = mapped_column(String(255), primary_key=True)
     route: Mapped[str] = mapped_column(String(255), primary_key=True)
     response_status: Mapped[int] = mapped_column(nullable=False)
-    response_body: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    response_body: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -347,7 +348,7 @@ class AuditLog(Base):
     action: Mapped[str] = mapped_column(String(128), nullable=False)
     target_type: Mapped[str] = mapped_column(String(64), nullable=False)
     target_id: Mapped[str] = mapped_column(String(255), nullable=False)
-    payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     prev_hash: Mapped[str | None] = mapped_column(String(64))
     row_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -10,6 +10,7 @@ the acceptance criterion P3-05 calls "Audit log-ийн мөрийг өөрчлө
 import hashlib
 import json
 import uuid
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.models import AuditLog
 
 
-def _row_hash(*, prev_hash: str | None, action: str, target_type: str, target_id: str, payload: dict) -> str:
+def _row_hash(*, prev_hash: str | None, action: str, target_type: str, target_id: str, payload: dict[str, Any]) -> str:
     canonical = json.dumps(
         {
             "prev_hash": prev_hash,
@@ -33,7 +34,13 @@ def _row_hash(*, prev_hash: str | None, action: str, target_type: str, target_id
 
 
 async def append_audit_log(
-    db: AsyncSession, *, actor_id: uuid.UUID | None, action: str, target_type: str, target_id: str, payload: dict
+    db: AsyncSession,
+    *,
+    actor_id: uuid.UUID | None,
+    action: str,
+    target_type: str,
+    target_id: str,
+    payload: dict[str, Any],
 ) -> AuditLog:
     last = await db.scalar(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(1))
     prev_hash = last.row_hash if last else None

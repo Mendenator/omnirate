@@ -14,6 +14,7 @@ SOW §7 risk mitigation, implemented directly rather than left as prose:
 import hashlib
 import json
 from dataclasses import dataclass
+from typing import Any
 
 import httpx
 import jsonschema
@@ -63,7 +64,7 @@ def should_route_to_llm(review_id: str, heuristic: ToxicityResult) -> bool:
     return bucket < LLM_SAMPLING_RATE
 
 
-async def _call_llm(text: str) -> tuple[dict, float]:
+async def _call_llm(text: str) -> tuple[dict[str, Any], float]:
     """Real implementation POSTs to the configured LLM endpoint with
     MODERATION_PROMPT_TEMPLATE and JSON-mode enabled; returns (parsed_json,
     cost_usd) computed from the provider's token usage in the response.

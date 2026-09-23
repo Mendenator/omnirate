@@ -3,6 +3,8 @@ straight from the category's published search_config (S-04) — a new facet
 appearing in a schema shows up in results with 0 deploy (K7).
 """
 
+from typing import Any
+
 from fastapi import APIRouter, Query, Request
 
 from app.search.client import ENTITIES_ALIAS
@@ -12,7 +14,7 @@ router = APIRouter(prefix="/api/v1/search", tags=["search"])
 
 
 @router.get("/autocomplete")
-async def autocomplete(request: Request, q: str = Query(min_length=1, max_length=64)):
+async def autocomplete(request: Request, q: str = Query(min_length=1, max_length=64)) -> list[dict[str, Any]]:
     """K8: p95 <=80ms. Edge-ngram match on `name_edge`, OR'd across galig/folding
     variants (S-05) so a latin-typed prefix still surfaces Cyrillic entities."""
     client = request.app.state.opensearch
@@ -39,12 +41,12 @@ async def search(
     lon: float | None = None,
     page: int = 1,
     page_size: int = 20,
-):
+) -> dict[str, Any]:
     """K9: p95 <=150ms @500RPS, facet counts included. K11: caller logs
     zero-result queries (see infra/observability's zero-result-ratio metric)."""
     client = request.app.state.opensearch
 
-    must: list[dict] = []
+    must: list[dict[str, Any]] = []
     if q:
         variants = build_query_variants(q)
         must.append(

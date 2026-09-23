@@ -11,6 +11,7 @@ Acceptance: 0 files with EXIF GPS surviving in the bucket.
 
 import io
 import uuid
+from typing import Any
 
 import boto3
 from PIL import Image
@@ -18,7 +19,10 @@ from PIL import Image
 from app.core.config import get_settings
 
 
-def get_s3_client():
+def get_s3_client() -> Any:
+    # boto3 ships no inline type stubs (would need the separate boto3-stubs /
+    # mypy-boto3-s3 packages); Any here is the honest type without adding
+    # that dependency just to satisfy mypy.
     return boto3.client("s3")
 
 

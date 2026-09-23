@@ -3,6 +3,8 @@ alert-тэй"). An unhandled exception from import_attendance reaches Sentry via
 app/core/observability.configure_sentry (called at worker startup).
 """
 
+from typing import Any
+
 from arq import cron
 from arq.connections import RedisSettings
 
@@ -12,13 +14,13 @@ from app.db.session import async_session_factory
 from app.domain.attendance_import import import_attendance
 
 
-async def run_daily_import(ctx) -> None:
+async def run_daily_import(ctx: dict[str, Any]) -> None:
     async with async_session_factory() as db:
         result = await import_attendance(db)
         print(f"[attendance-import] {result}")
 
 
-async def startup(ctx):
+async def startup(ctx: dict[str, Any]) -> None:
     configure_sentry()
 
 

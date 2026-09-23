@@ -8,7 +8,8 @@ smoothing burst traffic (that's handled separately by the LB).
 import time
 
 from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.types import ASGIApp
 
 from app.core.config import get_settings
 
@@ -26,11 +27,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     Redis instance.
     """
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp):
         super().__init__(app)
         self._settings = get_settings()
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         redis = request.app.state.redis
         limit = ROUTE_LIMITS_PER_MINUTE.get(request.url.path, self._settings.rate_limit_default_per_minute)
         client_key = request.headers.get("x-forwarded-for") or (request.client.host if request.client else "unknown")

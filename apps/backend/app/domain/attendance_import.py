@@ -13,17 +13,17 @@ from app.core.attendance_source import fetch_attendance_records
 from app.domain.models import Entity, PoliticianAttendance
 
 
-async def import_attendance(db: AsyncSession, *, source_url: str | None = None) -> dict:
+async def import_attendance(db: AsyncSession, *, source_url: str | None = None) -> dict[str, int]:
     records = await fetch_attendance_records(source_url)
 
     # external_id -> entity_id mapping lives in entities.attributes (schema-
     # driven, see docs/politician_schema.sample.json), not a dedicated column.
     entities = (await db.execute(select(Entity).where(Entity.category_slug == "uikh-gishuun"))).scalars().all()
-    external_id_to_entity: dict[str, str] = {
-        e.attributes.get("politician_external_id"): str(e.id)
-        for e in entities
-        if e.attributes.get("politician_external_id")
-    }
+    external_id_to_entity: dict[str, str] = {}
+    for e in entities:
+        external_id = e.attributes.get("politician_external_id")
+        if external_id:
+            external_id_to_entity[str(external_id)] = str(e.id)
 
     matched, unmatched = 0, 0
     for record in records:

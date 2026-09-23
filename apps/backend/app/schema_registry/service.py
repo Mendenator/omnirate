@@ -6,6 +6,8 @@ Acceptance:
 - An invalid JSON Schema (or invalid search/display block) -> rejected before write.
 """
 
+from typing import Any
+
 import jsonschema
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -42,14 +44,14 @@ _DISPLAY_CONFIG_META_SCHEMA = {
 }
 
 
-def _validate_json_schema_itself(schema: dict) -> None:
+def _validate_json_schema_itself(schema: dict[str, Any]) -> None:
     try:
         jsonschema.Draft202012Validator.check_schema(schema)
     except jsonschema.SchemaError as exc:
         raise HTTPException(status_code=422, detail=f"invalid json_schema: {exc.message}") from exc
 
 
-def _validate_config_block(name: str, value: dict, meta_schema: dict) -> None:
+def _validate_config_block(name: str, value: dict[str, Any], meta_schema: dict[str, Any]) -> None:
     try:
         jsonschema.validate(value, meta_schema)
     except jsonschema.ValidationError as exc:
@@ -87,9 +89,10 @@ async def publish_category_schema(db: AsyncSession, req: CategorySchemaPublishRe
 
 
 async def get_latest_schema(db: AsyncSession, category_slug: str) -> SchemaRegistryEntry | None:
-    return await db.scalar(
+    result: SchemaRegistryEntry | None = await db.scalar(
         select(SchemaRegistryEntry)
         .where(SchemaRegistryEntry.category_slug == category_slug)
         .order_by(SchemaRegistryEntry.version.desc())
         .limit(1)
     )
+    return result

@@ -1,6 +1,8 @@
 """Entity owner claim + reply (P1-13)."""
 
+import uuid
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -29,7 +31,7 @@ async def claim_entity(
     req: ClaimRequest,
     db: AsyncSession = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
-):
+) -> dict[str, Any]:
     entity = await db.get(Entity, entity_id)
     if entity is None:
         raise HTTPException(status_code=404, detail="entity not found")
@@ -51,7 +53,7 @@ async def claim_entity(
     return {"status": "claimed", "entity_id": str(entity.id)}
 
 
-async def _assert_is_owner(db: AsyncSession, *, entity_id, user_id) -> None:
+async def _assert_is_owner(db: AsyncSession, *, entity_id: str, user_id: uuid.UUID) -> None:
     owner = await db.scalar(
         select(EntityOwner).where(EntityOwner.entity_id == entity_id, EntityOwner.user_id == user_id)
     )
@@ -66,7 +68,7 @@ async def reply_to_review(
     req: OwnerReplyRequest,
     db: AsyncSession = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
-):
+) -> dict[str, Any]:
     await _assert_is_owner(db, entity_id=entity_id, user_id=user.user_id)
 
     review = await db.get(Review, review_id)

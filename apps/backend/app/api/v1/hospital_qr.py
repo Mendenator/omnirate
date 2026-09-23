@@ -2,10 +2,11 @@
 
 import base64
 from datetime import UTC, datetime
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, update
+from sqlalchemy import CursorResult, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import CurrentUser, get_current_user
@@ -26,7 +27,7 @@ class IssueQrResponse(BaseModel):
 @router.post("/entities/{entity_id}/hospital-qr", response_model=IssueQrResponse, status_code=201)
 async def issue_hospital_qr(
     entity_id: str, db: AsyncSession = Depends(get_db), user: CurrentUser = Depends(get_current_user)
-):
+) -> IssueQrResponse:
     entity = await db.get(Entity, entity_id)
     if entity is None:
         raise HTTPException(status_code=404, detail="entity not found")
@@ -64,7 +65,7 @@ class VerifyQrRequest(BaseModel):
 
 
 @router.post("/hospital-qr/verify")
-async def verify_qr(req: VerifyQrRequest, db: AsyncSession = Depends(get_db)):
+async def verify_qr(req: VerifyQrRequest, db: AsyncSession = Depends(get_db)) -> dict[str, str]:
     try:
         payload = verify_hospital_qr(req.token)
     except QrVerificationError as exc:
@@ -73,10 +74,16 @@ async def verify_qr(req: VerifyQrRequest, db: AsyncSession = Depends(get_db)):
     # Atomic claim: only succeeds if this jti exists and hasn't been used yet.
     # A second concurrent verify of the same token affects 0 rows here, so
     # replay is rejected even under a race, not just on the happy path.
-    result = await db.execute(
-        update(HospitalQrToken)
-        .where(HospitalQrToken.jti == payload.jti, HospitalQrToken.used_at.is_(None))
-        .values(used_at=datetime.now(UTC))
+    # UPDATE always executes as a CursorResult (has .rowcount); Session.execute()
+    # is just typed generically over any Executable, so the cast reflects what's
+    # actually returned here rather than widening the DML statement's own type.
+    result = cast(
+        "CursorResult[Any]",
+        await db.execute(
+            update(HospitalQrToken)
+            .where(HospitalQrToken.jti == payload.jti, HospitalQrToken.used_at.is_(None))
+            .values(used_at=datetime.now(UTC))
+        ),
     )
     await db.commit()
 

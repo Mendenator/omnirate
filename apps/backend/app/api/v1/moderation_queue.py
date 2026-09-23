@@ -5,6 +5,7 @@ blocked on anything external.
 """
 
 import uuid
+from collections.abc import Sequence
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -32,7 +33,7 @@ class CaseResponse(BaseModel):
 
 
 @router.get("/queue", response_model=list[CaseResponse])
-async def list_queue(db: AsyncSession = Depends(get_db)):
+async def list_queue(db: AsyncSession = Depends(get_db)) -> Sequence[ModerationCase]:
     cases = (
         (
             await db.execute(
@@ -55,7 +56,7 @@ class DecideRequest(BaseModel):
 @router.post("/cases/{case_id}/decide", response_model=CaseResponse)
 async def decide_case(
     case_id: str, req: DecideRequest, db: AsyncSession = Depends(get_db), user: CurrentUser = Depends(get_current_user)
-):
+) -> ModerationCase:
     case = await db.get(ModerationCase, case_id)
     if case is None:
         raise HTTPException(status_code=404, detail="case not found")

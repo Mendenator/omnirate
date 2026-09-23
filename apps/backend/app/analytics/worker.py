@@ -1,5 +1,7 @@
 """P2-07 scheduled export — arq cron every 15 minutes (the lag budget itself)."""
 
+from typing import Any
+
 from arq import cron
 from arq.connections import RedisSettings
 
@@ -7,7 +9,7 @@ from app.analytics.export_pipeline import run_export
 from app.core.config import get_settings
 
 
-async def run_export_job(ctx) -> None:
+async def run_export_job(ctx: dict[str, Any]) -> None:
     results = run_export()
     for r in results:
         print(f"[analytics-export] {r.table}: {r.rows_exported} rows, watermark={r.watermark.isoformat()}")

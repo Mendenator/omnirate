@@ -7,6 +7,7 @@ carries a machine-readable reason code.
 """
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -42,12 +43,14 @@ async def attach_e_barimt_evidence(
     req: EBarimtEvidenceRequest,
     db: AsyncSession = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
-):
+) -> dict[str, Any]:
     review = await db.get(Review, review_id)
     if review is None or review.user_id != user.user_id:
         raise HTTPException(status_code=404, detail="review not found")
 
     entity = await db.get(Entity, review.entity_id)
+    if entity is None:
+        raise HTTPException(status_code=404, detail="entity not found")
     settings = get_settings()
 
     try:
@@ -104,7 +107,7 @@ async def attach_gps_evidence(
     req: GpsEvidenceRequest,
     db: AsyncSession = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
-):
+) -> dict[str, Any]:
     """P2-01/P2-02: dwell-time-based PoE evidence. Rejects outright on any
     mock-location signal (OS flag, impossible speed jump, suspiciously
     uniform accuracy) rather than just discounting it — a spoofed GPS trail
@@ -115,6 +118,8 @@ async def attach_gps_evidence(
         raise HTTPException(status_code=404, detail="review not found")
 
     entity = await db.get(Entity, review.entity_id)
+    if entity is None:
+        raise HTTPException(status_code=404, detail="entity not found")
     if entity.lat is None or entity.lon is None:
         raise HTTPException(
             status_code=422, detail={"reason_code": "no_entity_location", "message": "entity has no geofence center"}

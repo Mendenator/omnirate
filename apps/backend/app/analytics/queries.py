@@ -4,6 +4,8 @@ query against the OLTP Postgres table would compete with live write traffic
 and scan row-oriented storage.
 """
 
+from typing import Any
+
 import duckdb
 
 from app.core.config import get_settings
@@ -18,7 +20,7 @@ def connect() -> duckdb.DuckDBPyConnection:
 
 def daily_review_counts_by_poe_level(
     con: duckdb.DuckDBPyConnection, *, since_date: str, bucket: str | None = None
-) -> list[tuple]:
+) -> list[tuple[Any, ...]]:
     bucket = bucket or get_settings().analytics_bucket
     return con.execute(
         f"""
@@ -32,7 +34,7 @@ def daily_review_counts_by_poe_level(
     ).fetchall()
 
 
-def entity_counts_by_branch(con: duckdb.DuckDBPyConnection, *, bucket: str | None = None) -> list[tuple]:
+def entity_counts_by_branch(con: duckdb.DuckDBPyConnection, *, bucket: str | None = None) -> list[tuple[Any, ...]]:
     bucket = bucket or get_settings().analytics_bucket
     return con.execute(
         f"""

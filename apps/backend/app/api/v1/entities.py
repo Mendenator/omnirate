@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api/v1/entities", tags=["entities"])
 
 
 @router.post("", response_model=EntityResponse, status_code=201)
-async def create_entity(req: EntityCreateRequest, db: AsyncSession = Depends(get_db)):
+async def create_entity(req: EntityCreateRequest, db: AsyncSession = Depends(get_db)) -> Entity:
     entity = Entity(**req.model_dump())
     db.add(entity)
     try:
@@ -22,7 +22,7 @@ async def create_entity(req: EntityCreateRequest, db: AsyncSession = Depends(get
 
 
 @router.get("/{entity_id}", response_model=EntityResponse)
-async def get_entity(entity_id: str, db: AsyncSession = Depends(get_db)):
+async def get_entity(entity_id: str, db: AsyncSession = Depends(get_db)) -> Entity:
     entity = await db.get(Entity, entity_id)
     if entity is None:
         raise HTTPException(status_code=404, detail="entity not found")

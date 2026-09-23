@@ -22,7 +22,7 @@ async def get_month_to_date_cost(redis: Redis) -> float:
 
 async def record_llm_cost(redis: Redis, cost_usd: float) -> float:
     key = _month_key()
-    new_total = await redis.incrbyfloat(key, cost_usd)
+    new_total: float = await redis.incrbyfloat(key, cost_usd)
     await redis.expire(key, 60 * 60 * 24 * 40)  # outlive the month, cheap to let it roll off
     return new_total
 

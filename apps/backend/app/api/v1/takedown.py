@@ -43,7 +43,7 @@ class TakedownResponse(BaseModel):
 @router.post("/takedowns", response_model=TakedownResponse, status_code=201)
 async def create_takedown(
     req: TakedownCreateRequest, db: AsyncSession = Depends(get_db), user: CurrentUser = Depends(get_current_user)
-):
+) -> TakedownRequest:
     now = datetime.now(UTC)
     takedown = TakedownRequest(
         requester_id=user.user_id,
@@ -70,7 +70,7 @@ async def create_takedown(
 @router.post("/law-enforcement-requests", response_model=TakedownResponse, status_code=201)
 async def create_law_enforcement_request(
     req: LawEnforcementRequestCreate, db: AsyncSession = Depends(get_db), user: CurrentUser = Depends(get_current_user)
-):
+) -> TakedownRequest:
     """No separate law-enforcement auth mechanism exists yet (see
     docs/PROGRESS.md — role-based access is a P3 admin-hardening gap this
     inherits from P2-12's moderator queue). `case_reference` being required
@@ -113,7 +113,7 @@ async def resolve_takedown(
     req: ResolveTakedownRequest,
     db: AsyncSession = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
-):
+) -> TakedownRequest:
     takedown = await db.get(TakedownRequest, takedown_id)
     if takedown is None:
         raise HTTPException(status_code=404, detail="takedown request not found")

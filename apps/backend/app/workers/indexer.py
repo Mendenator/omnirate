@@ -11,6 +11,7 @@ budget breach can be attributed to a stage.
 
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -28,7 +29,7 @@ CATEGORY_PRIOR_MEAN = 3.5  # placeholder until S-08's gold set gives a real per-
 CATEGORY_PRIOR_CONFIDENCE = 10.0
 
 
-async def reindex_entity(ctx, entity_id: str) -> None:
+async def reindex_entity(ctx: dict[str, Any], entity_id: str) -> None:
     async with async_session_factory() as db:
         entity = await db.get(Entity, uuid.UUID(entity_id))
         if entity is None:
@@ -67,16 +68,16 @@ async def reindex_entity(ctx, entity_id: str) -> None:
         await ctx["opensearch"].index(index=ENTITIES_ALIAS, id=str(entity.id), body=doc, refresh=False)
 
 
-async def startup(ctx):
+async def startup(ctx: dict[str, Any]) -> None:
     ctx["opensearch"] = get_opensearch_client()
     await ensure_entities_index(ctx["opensearch"])
 
 
-async def shutdown(ctx):
+async def shutdown(ctx: dict[str, Any]) -> None:
     await ctx["opensearch"].close()
 
 
-async def noop_heartbeat(ctx) -> None:
+async def noop_heartbeat(ctx: dict[str, Any]) -> None:
     """Keeps a metric alive so Grafana can alert on worker liveness, not just queue depth."""
     return None
 

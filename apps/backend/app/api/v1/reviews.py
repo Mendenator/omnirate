@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +22,7 @@ async def create_review(
     idempotency_key: str = Header(..., alias="Idempotency-Key"),
     db: AsyncSession = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
-):
+) -> Review | dict[str, Any]:
     cached = await get_cached_response(db, key=idempotency_key, route=_ROUTE)
     if cached is not None:
         status, body = cached

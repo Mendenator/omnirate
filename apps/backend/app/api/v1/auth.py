@@ -47,7 +47,7 @@ class OtpLoginRequest(BaseModel):
 
 
 @router.get("/dan/start", response_model=AuthStartResponse)
-async def dan_start(redirect_uri: str):
+async def dan_start(redirect_uri: str) -> AuthStartResponse:
     pkce = dan_auth.generate_pkce_pair()
     state = secrets.token_urlsafe(16)
     _pending_flows[state] = pkce
@@ -58,7 +58,7 @@ async def dan_start(redirect_uri: str):
 
 
 @router.post("/dan/callback", response_model=TokenResponse)
-async def dan_callback(req: DanCallbackRequest, db: AsyncSession = Depends(get_db)):
+async def dan_callback(req: DanCallbackRequest, db: AsyncSession = Depends(get_db)) -> TokenResponse:
     pkce = _pending_flows.pop(req.state, None)
     if pkce is None:
         raise HTTPException(status_code=400, detail="unknown or expired state")
@@ -84,7 +84,7 @@ async def dan_callback(req: DanCallbackRequest, db: AsyncSession = Depends(get_d
 
 
 @router.post("/otp/verify", response_model=TokenResponse)
-async def otp_verify(req: OtpLoginRequest, db: AsyncSession = Depends(get_db)):
+async def otp_verify(req: OtpLoginRequest, db: AsyncSession = Depends(get_db)) -> TokenResponse:
     """L1 fallback per SOW §7 risk mitigation: if the ДАН agreement slips, the
     pilot can launch on phone+OTP only, with a lower PoE ceiling (L1)."""
     # NOTE: OTP send/verify against an SMS gateway is out of scope for this

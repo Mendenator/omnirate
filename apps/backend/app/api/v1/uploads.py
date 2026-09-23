@@ -22,7 +22,7 @@ class FinalizeResponse(BaseModel):
 
 
 @router.post("/presign", response_model=PresignResponse)
-async def presign(req: PresignRequest):
+async def presign(req: PresignRequest) -> PresignResponse:
     if req.content_type not in _ALLOWED_CONTENT_TYPES:
         raise HTTPException(status_code=422, detail=f"content_type must be one of {sorted(_ALLOWED_CONTENT_TYPES)}")
     upload_id, url = presign_upload(content_type=req.content_type)
@@ -30,7 +30,7 @@ async def presign(req: PresignRequest):
 
 
 @router.post("/{upload_id}/finalize", response_model=FinalizeResponse)
-async def finalize(upload_id: str):
+async def finalize(upload_id: str) -> FinalizeResponse:
     try:
         key = finalize_upload(upload_id=upload_id)
     except ValueError as exc:

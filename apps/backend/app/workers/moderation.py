@@ -8,6 +8,7 @@ touches PII).
 
 import json
 import uuid
+from typing import Any
 
 from arq.connections import RedisSettings
 
@@ -16,7 +17,7 @@ from app.db.session import async_session_factory
 from app.domain.audit import append_audit_log
 from app.domain.defamation import check_strict_defamation
 from app.domain.models import Entity, Review
-from app.domain.moderation import redact_pii
+from app.domain.moderation import PiiFinding, redact_pii
 
 DLQ_KEY = "moderation:dlq"
 MODERATION_QUEUE_NAME = "moderation"
@@ -27,7 +28,7 @@ MODERATION_QUEUE_NAME = "moderation"
 STRICT_DEFAMATION_BRANCH = "tur-alba"
 
 
-async def moderate_review(ctx, review_id: str) -> dict:
+async def moderate_review(ctx: dict[str, Any], review_id: str) -> dict[str, Any]:
     """Idempotent: re-running on an already-clean body is a no-op (redact_pii
     on text with no PII returns the input unchanged, and a review already
     blocked stays blocked), so at-least-once delivery from arq's retry
@@ -55,7 +56,7 @@ async def moderate_review(ctx, review_id: str) -> dict:
                 await db.commit()
                 return {"status": "blocked", "reason": defamation_check.reason}
 
-        findings = []
+        findings: list[PiiFinding] = []
         if review.body:
             redacted, findings = redact_pii(review.body)
             review.body = redacted
@@ -72,13 +73,13 @@ async def moderate_review(ctx, review_id: str) -> dict:
         return {"status": "ok", "pii_findings": len(findings)}
 
 
-async def on_job_failed_permanently(ctx, review_id: str, error: str) -> None:
+async def on_job_failed_permanently(ctx: dict[str, Any], review_id: str, error: str) -> None:
     """Called by app/workers/queue.py's retry wrapper once max_tries is exhausted."""
     redis = ctx["redis"]
     await redis.rpush(DLQ_KEY, json.dumps({"review_id": review_id, "error": error}))
 
 
-async def startup(ctx):
+async def startup(ctx: dict[str, Any]) -> None:
     pass
 
 

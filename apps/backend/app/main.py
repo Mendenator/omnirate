@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from arq import create_pool
@@ -18,7 +19,7 @@ settings = get_settings()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Skipped when a test (or other caller) has already injected a client —
     # see tests/conftest.py, which sets app.state.redis to a fake before the
     # app ever starts handling requests.
@@ -52,5 +53,5 @@ configure_tracing(app)
 
 
 @app.get("/healthz")
-async def healthz():
+async def healthz() -> dict[str, str]:
     return {"status": "ok", "env": settings.env}

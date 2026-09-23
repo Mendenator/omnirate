@@ -1,6 +1,7 @@
 """P3-07 scheduled report — 1st of each month, covering the prior month."""
 
 from datetime import UTC, datetime
+from typing import Any
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -11,7 +12,7 @@ from app.core.config import get_settings
 from app.db.session import async_session_factory
 
 
-async def run_monthly_report(ctx) -> None:
+async def run_monthly_report(ctx: dict[str, Any]) -> None:
     now = datetime.now(UTC)
     period_start = (now.replace(day=1) - relativedelta(months=1)).replace(hour=0, minute=0, second=0, microsecond=0)
     period_end = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)

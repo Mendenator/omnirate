@@ -1,4 +1,5 @@
 import uuid
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -12,7 +13,7 @@ class EntityCreateRequest(BaseModel):
     location_slug: str | None = None
     lat: float | None = None
     lon: float | None = None
-    attributes: dict = Field(default_factory=dict)
+    attributes: dict[str, Any] = Field(default_factory=dict)
 
 
 class EntityResponse(BaseModel):
@@ -23,7 +24,7 @@ class EntityResponse(BaseModel):
     name: str
     ttd: str | None
     location_slug: str | None
-    attributes: dict
+    attributes: dict[str, Any]
     verified: bool
 
     model_config = {"from_attributes": True}
@@ -32,7 +33,7 @@ class EntityResponse(BaseModel):
 class ReviewCreateRequest(BaseModel):
     entity_id: uuid.UUID
     overall_score: float = Field(ge=0, le=5)
-    criteria_scores: dict = Field(default_factory=dict)
+    criteria_scores: dict[str, float] = Field(default_factory=dict)
     body: str | None = Field(default=None, max_length=4000)
 
 
@@ -42,7 +43,7 @@ class ReviewResponse(BaseModel):
     user_id: uuid.UUID
     poe_level: str
     overall_score: float
-    criteria_scores: dict
+    criteria_scores: dict[str, float]
     body: str | None
 
     model_config = {"from_attributes": True}

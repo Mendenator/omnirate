@@ -19,7 +19,7 @@ from datetime import UTC, datetime
 
 import duckdb
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 
 EXPORTED_TABLES = ("entities", "reviews")
 
@@ -31,7 +31,7 @@ class ExportResult:
     watermark: datetime
 
 
-def _connect(settings) -> duckdb.DuckDBPyConnection:
+def _connect(settings: Settings) -> duckdb.DuckDBPyConnection:
     con = duckdb.connect()
     con.execute("INSTALL postgres_scanner; LOAD postgres_scanner;")
     con.execute("INSTALL httpfs; LOAD httpfs;")
@@ -69,7 +69,8 @@ def export_table(con: duckdb.DuckDBPyConnection, *, table: str, bucket: str, pre
         """,
         [watermark, now],
     )
-    rows = result.fetchone()[0] if result.description else 0
+    row = result.fetchone() if result.description else None
+    rows = row[0] if row else 0
 
     _write_watermark(con, table, now)
     return ExportResult(table=table, rows_exported=rows, watermark=now)

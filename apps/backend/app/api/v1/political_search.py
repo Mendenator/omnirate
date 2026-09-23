@@ -7,6 +7,8 @@ app/search/ranking.py at all — there's no ranking formula to misconfigure if
 the code path never calls one.
 """
 
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +22,7 @@ POLITICAL_BRANCH = "tur-alba"
 
 
 @router.get("/by-district")
-async def list_by_district(tovrog_slug: str | None = None, db: AsyncSession = Depends(get_db)):
+async def list_by_district(tovrog_slug: str | None = None, db: AsyncSession = Depends(get_db)) -> list[dict[str, Any]]:
     query = select(Entity).where(Entity.branch_slug == POLITICAL_BRANCH)
     if tovrog_slug:
         query = query.where(Entity.attributes["tovrog_slug"].astext == tovrog_slug)

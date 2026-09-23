@@ -39,7 +39,7 @@ async def create_complaint(
     req: ComplaintCreateRequest,
     db: AsyncSession = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
-):
+) -> Complaint:
     complaint = Complaint(
         reporter_id=user.user_id,
         target_type=req.target_type,
