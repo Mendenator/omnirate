@@ -112,10 +112,16 @@
 - 3 API response model (`complaints.py`, `moderation_queue.py`, `takedown.py`): `id: str` бодит баганын төрөл `uuid.UUID`-тай зөрчилдсөн.
 - Тестийн fixture: `client` fixture-ийн зохиомол хэрэглэгч бодит `users` мөр байгаагүй тул FK constraint зөрчиж байсан.
 
+**`apps/web` бодитоор ажиллуулж шалгасан** (Node.js 24 суулгасны дараа): `npm install` (332 сан) амжилттай, `next dev` эхэлж, дараах хуудсууд шалгагдсан —
+
+- Нүүр хуудас, `/search` (zero-result fallback K11 зурвас зөв харагдана)
+- `/admin/schemas` (K7 builder) — **бүтэн E2E урсгал бодитоор шалгагдсан**: React UI-аас категори нэмж, `/api/backend/*` rewrite proxy-гоор жинхэнэ FastAPI backend руу, тэндээс live Postgres руу мөр бичигдэж, буцаж GET-ээр баталгаажсан (Кирилл текст — `label_mn: "Хоолны төрөл"` — гэмтэлгүй round-trip хийсэн).
+
 Одоо хараахан шалгаагүй:
 - `terraform plan/apply` (AWS эрх шаардана)
 - GitHub branch protection (repo, `gh` CLI эрх шаардана — `.github/workflows/ci.yml` мержлэхээс өмнө **Settings → Branches**-д гараар асаана уу)
-- `apps/web`, `apps/mobile`-ийн `npm install`/build (Node.js орчин энэ сесст суулгаагүй)
+- `apps/web`-ийн Playwright e2e/axe-core тест, `npm run build` (production build)
+- `apps/mobile`-ийн `npm install`/Expo build
 
 ## Дараагийн алхам
 
