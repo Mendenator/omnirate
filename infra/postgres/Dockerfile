@@ -7,7 +7,28 @@
 # for local dev.
 FROM postgis/postgis:16-3.4 AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# postgis/postgis:16-3.4 is still Debian 11 (bullseye), which is old enough
+# now that deb.debian.org has dropped it entirely (404s on every package).
+# archive.debian.org mirrors EOL Debian releases indefinitely, but only the
+# main archive — bullseye-security isn't published there under that suite
+# name at all (404 on the Release file itself). That's fine here: this
+# builder stage only exists to compile pg_jsonschema.so, which gets COPY'd
+# into a fresh, unpatched postgis/postgis:16-3.4 final stage below anyway —
+# security patches on throwaway build tools (curl, git, build-essential)
+# don't change what ships. Repoint the main archive and drop -security.
+RUN sed -i \
+        -e '/debian-security/d' \
+        -e 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' \
+        /etc/apt/sources.list \
+    && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+
+# archive.debian.org serves the *last* bullseye snapshot before EOL, which is
+# newer than several packages already baked into this base image (e.g.
+# libxml2) — apt-get install alone refuses to pull libxml2-dev because it
+# can't upgrade the already-installed libxml2 to match as a side effect.
+# `apt-get upgrade` first reconciles the base image with the archive
+# snapshot so the subsequent install has no version conflicts to resolve.
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     build-essential curl libssl-dev pkg-config git \
     postgresql-server-dev-16 \
     && rm -rf /var/lib/apt/lists/*
