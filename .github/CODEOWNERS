@@ -1,0 +1,26 @@
+# CODEOWNERS
+#
+# Each line is a file pattern followed by one or more owners. Owners are
+# automatically requested for review on PRs touching matching paths.
+# See: https://docs.github.com/articles/about-code-owners
+#
+# Later matches take precedence over earlier ones, so keep the catch-all
+# first and more specific rules below it.
+
+* @Mendenator
+
+# Backend (FastAPI domain API, PoE/scoring, moderation, search)
+/apps/backend/ @Mendenator
+
+# Web (Next.js public site + admin UI)
+/apps/web/ @Mendenator
+
+# Mobile (Expo / React Native)
+/apps/mobile/ @Mendenator
+
+# Infra-as-code (Postgres/PostGIS image, Terraform, Docker Compose)
+/infra/ @Mendenator
+/docker-compose.yml @Mendenator
+
+# CI/CD and repo governance
+/.github/ @Mendenator
