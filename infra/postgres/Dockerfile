@@ -22,13 +22,33 @@ RUN sed -i \
         /etc/apt/sources.list \
     && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
 
-# archive.debian.org serves the *last* bullseye snapshot before EOL, which is
-# newer than several packages already baked into this base image (e.g.
-# libxml2) — apt-get install alone refuses to pull libxml2-dev because it
-# can't upgrade the already-installed libxml2 to match as a side effect.
-# `apt-get upgrade` first reconciles the base image with the archive
-# snapshot so the subsequent install has no version conflicts to resolve.
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+# The base image's baked-in libxml2 (...u5) is actually NEWER than what
+# archive.debian.org's frozen bullseye/main snapshot offers (...u4) — u5 was
+# a point release that only ever shipped via debian-security, which isn't
+# mirrored on archive.debian.org under that suite name at all (see above).
+# libxml2-dev is only available at u4 from the snapshot and needs an exact
+# version match, so satisfying it means *downgrading* the already-installed
+# libxml2, not upgrading it. --allow-downgrades alone only permits that if
+# apt's solver decides to do it, but nothing here requests libxml2 itself,
+# so the solver never considers touching it — it has to be named explicitly,
+# pinned to the exact version the archive snapshot carries, to force the
+# downgrade. Safe here: libxml2 isn't something pg_jsonschema.so itself
+# links against (it's a JSON Schema validator, not an XML tool) — it's only
+# a transitive dependency of the build tooling in this discarded builder
+# stage. (This pin is tied to archive.debian.org's bullseye/main snapshot,
+# which is now frozen — Check-Valid-Until is disabled above precisely
+# because that snapshot isn't expected to ever change.)
+#
+# DEBIAN_FRONTEND=noninteractive + the dpkg confold/confdef options guard
+# against a separate issue: the base image ships a locally-modified
+# /etc/postgresql-common/createcluster.conf, and touching postgresql-common
+# would otherwise stop to ask (hanging forever on a build with no TTY)
+# whether to keep it — force-confold says "always keep the version on disk."
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends --allow-downgrades \
+    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+    libxml2=2.9.10+dfsg-6.7+deb11u4 \
     build-essential curl libssl-dev pkg-config git \
     postgresql-server-dev-16 \
     && rm -rf /var/lib/apt/lists/*
