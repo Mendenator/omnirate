@@ -14,9 +14,12 @@ interface SearchResponse {
 export default async function CategoryPage({
   params,
 }: {
-  params: { branch: string; category: string };
+  // Next.js 15 made route params a Promise (async dynamic APIs) — a plain
+  // object here compiles fine in dev but fails `next build`'s generated
+  // PageProps type check.
+  params: Promise<{ branch: string; category: string }>;
 }) {
-  const { branch, category } = params;
+  const { branch, category } = await params;
 
   const [schema, results] = await Promise.all([
     apiGet<CategorySchema>(`/api/v1/schemas/${category}/latest`),

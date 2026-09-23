@@ -15,8 +15,9 @@ const SECTION_LABELS: Record<string, string> = {
   owner_reply: "Эзэмшигчийн хариу",
 };
 
-export default async function EntityPage({ params }: { params: { id: string } }) {
-  const entity = await apiGet<EntityDetail>(`/api/v1/entities/${params.id}`);
+export default async function EntityPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const entity = await apiGet<EntityDetail>(`/api/v1/entities/${id}`);
   if (!entity) {
     return <main style={{ padding: 24 }}>Олдсонгүй.</main>;
   }

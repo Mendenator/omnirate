@@ -119,10 +119,11 @@
 
 **Playwright e2e (P1-17) + axe-core WCAG аудит (S-20) бодитоор ажиллуулж шалгасан**: Chromium суулгаж, `apps/web/e2e/`-ийн бүх **7 тест 7/7 давсан** (нэг тест эхлээд entity өгөгдөл дутуу тул алгассан байсан ч жинхэнэ entity Postgres-д үүсгээд дахин ажиллуулахад давсан). `/`, `/search`, `/admin/schemas`, `/tur-alba` — 4 хуудсанд critical/serious WCAG 2.2 AA зөрчил **0**.
 
+**`npm run build` (production build) бодитоор ажиллуулж шалгасан.** Эхний оролдлогод бодит алдаа олдсон: Next.js 15 бүх dynamic route-ийн `params` prop-ыг synchronous object-ээс **Promise** болгож өөрчилсөн (breaking change), гэтэл `[branch]/[category]`, `entities/[id]`, `entities/[id]/review` — 3 хуудас хуучин (Next 14 хэлбэрийн) synchronous `params: { id: string }` төрөлтэй байсан тул `next build`-ийн type-check үед амжилтгүй болсон (`next dev`-д харагддаггүй, зөвхөн production build-ийн type-check илрүүлдэг). Бүх 3 файлыг `params: Promise<...>` + `await params`-руу засаж, дахин ажиллуулахад 8 route бүгд амжилттай (7/7 static+dynamic хуудас), production server-ийг бодитоор эхлүүлж 4 route (`/`, `/search`, `/admin/schemas`, dynamic `/entities/[id]`) 200 буцааж, live backend-ээс өгөгдөл зөв татаж байгааг баталгаажуулсан.
+
 Одоо хараахан шалгаагүй:
 - `terraform plan/apply` (AWS эрх шаардана)
 - GitHub branch protection (repo, `gh` CLI эрх шаардана — `.github/workflows/ci.yml` мержлэхээс өмнө **Settings → Branches**-д гараар асаана уу)
-- `npm run build` (production build)
 - `apps/mobile`-ийн `npm install`/Expo build
 
 ## Дараагийн алхам
