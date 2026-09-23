@@ -14,7 +14,18 @@ dependencies = [
     "redis>=5.2",
     "arq>=0.26",
     "jsonschema>=4.23",
-    "python-jose[cryptography]>=3.3",
+    # PyJWT, not python-jose: jose pulls in `ecdsa` (a pure-Python ECC lib
+    # with a known, disputed-but-unpatched timing-side-channel issue,
+    # PYSEC-2026-1325) transitively even though this app only ever signs
+    # HS256 (HMAC) tokens and never touches jose's EC code path. PyJWT
+    # supports HS256 with no ecdsa dependency at all — smaller attack
+    # surface for identical behavior, not just a suppressed audit finding.
+    "PyJWT>=2.9",
+    # Used directly by app/core/hospital_qr.py (Ed25519 signing) — previously
+    # only ever present transitively via python-jose[cryptography], so
+    # removing jose for the PyJWT swap above silently broke this import.
+    # Declared explicitly now so it can't happen again from an unrelated change.
+    "cryptography>=43",
     "httpx>=0.27",
     "structlog>=24.4",
     "opentelemetry-sdk>=1.28",

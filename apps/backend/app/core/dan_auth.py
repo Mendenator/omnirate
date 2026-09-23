@@ -5,6 +5,18 @@ agreement with ДАН and real client credentials. Until that lands, `settings.d
 routes the flow at a local mock provider so the rest of the system (JWT issuance,
 РД hashing, session handling) can be built and tested end-to-end today.
 
+Real onboarding path (verified against public sources, not just guessed at):
+ДАН runs under the National Data Center. New connections/new services go
+through the geree.gov.mn e-contract system — see the technical guide at
+guide.datacenter.gov.mn/books/tanilt-nevtreltiin-dan-sistemiin-garyn-avlaga
+and the developer portal at developer.e-mongolia.mn. Contacts:
+info@datacenter.gov.mn (general), development@datacenter.gov.mn (technical),
+security@datacenter.gov.mn. It's OAuth2 with client_id/client_secret/redirect_uri
+as documented here already; note the server clock must be UTC+08:00 and grants
+expire in 60s, both worth checking first against a real sandbox once credentials
+exist. None of this substitutes for OmniRate's own legal entity actually signing
+the agreement — that step isn't something code (or an AI) can do on their behalf.
+
 Risk mitigation per SOW §7: if the ДАН agreement slips, the product falls back to
 an OTP-only (L1) verification mode — see `poe_level="L1"` path in the auth router.
 """

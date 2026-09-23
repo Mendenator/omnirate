@@ -1,7 +1,14 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# RFC 7518 §3.2: an HS256 key shorter than the 256-bit (32-byte) hash output
+# is weaker than the algorithm's own security margin. PyJWT warns on this at
+# call time (python-jose, the library this replaced, silently accepted any
+# length) — padded to 32 bytes so the *dev* default itself doesn't trip that
+# warning on every request; still not a real secret, just a quiet one.
+_DEV_PLACEHOLDER_SECRET = "dev-only-change-me-0123456789ab"
 
 
 class Settings(BaseSettings):
@@ -12,12 +19,25 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     opensearch_url: str = "http://localhost:9200"
 
-    jwt_secret: str = Field(default="dev-only-change-me")
+    jwt_secret: str = Field(default=_DEV_PLACEHOLDER_SECRET)
     jwt_algorithm: str = "HS256"
     jwt_access_ttl_seconds: int = 900
 
     # HMAC key for hashing national-ID (РД) before storage — never store raw РД.
-    rd_hmac_secret: str = Field(default="dev-only-change-me")
+    rd_hmac_secret: str = Field(default=_DEV_PLACEHOLDER_SECRET)
+
+    @model_validator(mode="after")
+    def _reject_placeholder_secrets_outside_dev(self) -> "Settings":
+        if self.env == "dev":
+            return self
+        for field_name in ("jwt_secret", "rd_hmac_secret"):
+            value = getattr(self, field_name)
+            if value == _DEV_PLACEHOLDER_SECRET or len(value) < 32:
+                raise ValueError(
+                    f"{field_name} is the dev placeholder or under 32 bytes — "
+                    f"set OMNIRATE_{field_name.upper()} to a real secret before running with env={self.env!r}"
+                )
+        return self
 
     # ДАН (national e-auth) OAuth2+PKCE client. In dev/stage these point at the
     # local mock provider (see app/core/dan_auth.py); production values require

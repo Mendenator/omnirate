@@ -6,6 +6,17 @@ local mock so the PoE pipeline (P1-05) can be built and tested end-to-end
 before that access lands. Risk mitigation per SOW §7: if e-barimt access is
 denied, OCR (P1-03) + GPS (P2-01) evidence substitutes and the PoE weight for
 that path stays at 0.70 (see app/domain/poe.py comment for the swap point).
+
+Real onboarding path (verified against public sources): the system is
+"PosAPI 3.0", documented by the Information Technology Center at
+developer.itc.gov.mn/docs/ebarimt-api — the official PDF spec is at
+share.itc.gov.mn/share/developer/POS%20API%203.0.1.pdf, with a Postman
+collection available from the same portal. It's a REST API; a reference
+client (unofficial) is at github.com/hurelhuyag/ebarimt, whose staging host
+is stg-invoice.ebarimt.mn. Without e-tax system access already, the documented
+path is contacting your local tax office. As with ДАН, actually obtaining
+credentials requires OmniRate's own legal entity to request access — not
+something this codebase (or whoever writes it) can do on the company's behalf.
 """
 
 from dataclasses import dataclass

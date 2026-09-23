@@ -10,7 +10,7 @@ import hmac
 import time
 import uuid
 
-from jose import jwt
+import jwt
 
 from app.core.config import get_settings
 
