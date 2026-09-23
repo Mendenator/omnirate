@@ -8,23 +8,26 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@rjsf/core": "^5.23.0",
+    "@rjsf/utils": "^5.23.0",
+    "@rjsf/validator-ajv8": "^5.23.0",
     "next": "^15.0.3",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "@rjsf/core": "^5.23.0",
-    "@rjsf/validator-ajv8": "^5.23.0",
-    "@rjsf/utils": "^5.23.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "typescript": "^5.6.3",
-    "@types/react": "^18.3.12",
+    "@axe-core/playwright": "^4.10.1",
+    "@playwright/test": "^1.48.2",
     "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
     "eslint": "^9.14.0",
     "eslint-config-next": "^15.0.3",
-    "@playwright/test": "^1.48.2",
-    "@axe-core/playwright": "^4.10.1"
+    "prettier": "^3.9.9",
+    "typescript": "^5.6.3"
   }
 }

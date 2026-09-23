@@ -28,7 +28,9 @@ export default async function EntityPage({ params }: { params: Promise<{ id: str
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: 24 }}>
       <nav aria-label="breadcrumb">
-        <Link href="/">Нүүр</Link> / <Link href={`/${entity.branch_slug}/${entity.category_slug}`}>{entity.category_slug}</Link> / {entity.name}
+        <Link href="/">Нүүр</Link> /{" "}
+        <Link href={`/${entity.branch_slug}/${entity.category_slug}`}>{entity.category_slug}</Link>{" "}
+        / {entity.name}
       </nav>
 
       <h1>

@@ -24,7 +24,11 @@ export default function ReviewForm({ entityId }: { entityId: string }) {
       },
       body: JSON.stringify({ entity_id: entityId, overall_score: overallScore, body }),
     });
-    setStatus(res.ok ? "✅ Үнэлгээ илгээгдлээ. Дараагийн алхам: e-barimt баримт хавсаргах." : `❌ Алдаа (${res.status})`);
+    setStatus(
+      res.ok
+        ? "✅ Үнэлгээ илгээгдлээ. Дараагийн алхам: e-barimt баримт хавсаргах."
+        : `❌ Алдаа (${res.status})`,
+    );
     if (res.ok) setStep(4);
   }
 
@@ -33,7 +37,14 @@ export default function ReviewForm({ entityId }: { entityId: string }) {
       {step === 1 && (
         <>
           <h2>1. Ерөнхий оноо</h2>
-          <input type="range" min={0} max={5} step={0.5} value={overallScore} onChange={(e) => setOverallScore(Number(e.target.value))} />
+          <input
+            type="range"
+            min={0}
+            max={5}
+            step={0.5}
+            value={overallScore}
+            onChange={(e) => setOverallScore(Number(e.target.value))}
+          />
           <span> {overallScore} / 5</span>
           <div>
             <button onClick={() => setStep(2)}>Дараах</button>
@@ -43,7 +54,12 @@ export default function ReviewForm({ entityId }: { entityId: string }) {
       {step === 2 && (
         <>
           <h2>2. Тайлбар (заавал биш)</h2>
-          <textarea value={body} onChange={(e) => setBody(e.target.value)} maxLength={4000} rows={5} />
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            maxLength={4000}
+            rows={5}
+          />
           <div>
             <button onClick={() => setStep(3)}>Дараах</button>
           </div>

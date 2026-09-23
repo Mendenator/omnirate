@@ -19,6 +19,7 @@ build/
 *.log
 test-results/
 playwright-report/
+*.tsbuildinfo
 
 # Env / secrets
 .env

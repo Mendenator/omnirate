@@ -14,7 +14,9 @@ for (const path of PAGES_TO_AUDIT) {
     await page.goto(path);
     const results = await new AxeBuilder({ page }).withTags(["wcag22aa"]).analyze();
 
-    const blocking = results.violations.filter((v) => v.impact === "critical" || v.impact === "serious");
+    const blocking = results.violations.filter(
+      (v) => v.impact === "critical" || v.impact === "serious",
+    );
     expect(blocking, JSON.stringify(blocking, null, 2)).toEqual([]);
   });
 }

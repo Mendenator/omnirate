@@ -19,7 +19,14 @@ interface AttributeRow {
   facet: boolean;
 }
 
-const ALL_SECTIONS = ["summary", "criteria_breakdown", "reviews", "attributes", "map", "owner_reply"];
+const ALL_SECTIONS = [
+  "summary",
+  "criteria_breakdown",
+  "reviews",
+  "attributes",
+  "map",
+  "owner_reply",
+];
 
 export default function SchemaEditor() {
   const [categorySlug, setCategorySlug] = useState("");
@@ -43,7 +50,9 @@ export default function SchemaEditor() {
   }
 
   function toggleSection(section: string) {
-    setSections((prev) => (prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]));
+    setSections((prev) =>
+      prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section],
+    );
   }
 
   async function publish() {
@@ -51,7 +60,9 @@ export default function SchemaEditor() {
 
     const jsonSchema = {
       type: "object",
-      properties: Object.fromEntries(rows.filter((r) => r.field).map((r) => [r.field, { type: r.type }])),
+      properties: Object.fromEntries(
+        rows.filter((r) => r.field).map((r) => [r.field, { type: r.type }]),
+      ),
     };
 
     const searchConfig = {
@@ -96,25 +107,49 @@ export default function SchemaEditor() {
 
       <label>
         Категорийн slug
-        <input value={categorySlug} onChange={(e) => setCategorySlug(e.target.value)} placeholder="restoran" />
+        <input
+          value={categorySlug}
+          onChange={(e) => setCategorySlug(e.target.value)}
+          placeholder="restoran"
+        />
       </label>
       <label>
         Хувилбар
-        <input type="number" min={1} value={version} onChange={(e) => setVersion(Number(e.target.value))} />
+        <input
+          type="number"
+          min={1}
+          value={version}
+          onChange={(e) => setVersion(Number(e.target.value))}
+        />
       </label>
 
       <h2>Талбарууд</h2>
       {rows.map((row, i) => (
         <div key={i} style={{ display: "flex", gap: 8, marginBottom: 4 }}>
-          <input placeholder="field (жишээ: cuisine)" value={row.field} onChange={(e) => updateRow(i, { field: e.target.value })} />
-          <input placeholder="Монгол нэр" value={row.label_mn} onChange={(e) => updateRow(i, { label_mn: e.target.value })} />
-          <select value={row.type} onChange={(e) => updateRow(i, { type: e.target.value as FieldType })}>
+          <input
+            placeholder="field (жишээ: cuisine)"
+            value={row.field}
+            onChange={(e) => updateRow(i, { field: e.target.value })}
+          />
+          <input
+            placeholder="Монгол нэр"
+            value={row.label_mn}
+            onChange={(e) => updateRow(i, { label_mn: e.target.value })}
+          />
+          <select
+            value={row.type}
+            onChange={(e) => updateRow(i, { type: e.target.value as FieldType })}
+          >
             <option value="string">Текст</option>
             <option value="integer">Тоо</option>
             <option value="boolean">Тийм/Үгүй</option>
           </select>
           <label>
-            <input type="checkbox" checked={row.facet} onChange={(e) => updateRow(i, { facet: e.target.checked })} />
+            <input
+              type="checkbox"
+              checked={row.facet}
+              onChange={(e) => updateRow(i, { facet: e.target.checked })}
+            />
             Шүүлтүүр
           </label>
           <button type="button" onClick={() => removeRow(i)}>

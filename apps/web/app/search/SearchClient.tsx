@@ -65,8 +65,8 @@ export default function SearchClient() {
 
         {data && data.total === 0 && (
           <p>
-            Илэрц олдсонгүй. Та ижил төстэй үгээр хайж үзнэ үү? (K11: zero-result fallback — S-15-д бүрэн
-            хэрэгжинэ)
+            Илэрц олдсонгүй. Та ижил төстэй үгээр хайж үзнэ үү? (K11: zero-result fallback — S-15-д
+            бүрэн хэрэгжинэ)
           </p>
         )}
 

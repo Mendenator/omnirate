@@ -36,11 +36,19 @@ export default function RewriteSuggestion({ originalText, suggestedText, onAccep
 
   return (
     <div style={{ border: "1px solid #e0a800", borderRadius: 4, padding: 12, marginTop: 12 }}>
-      <p>Таны сэтгэгдэл зохицуулалтын шалгуурт таарахгүй байна. Дараах засмал хувилбарыг санал болгож байна:</p>
+      <p>
+        Таны сэтгэгдэл зохицуулалтын шалгуурт таарахгүй байна. Дараах засмал хувилбарыг санал болгож
+        байна:
+      </p>
       <p style={{ color: "#888" }}>
         <s>{originalText}</s>
       </p>
-      <textarea value={editedText} onChange={(e) => setEditedText(e.target.value)} rows={4} style={{ width: "100%" }} />
+      <textarea
+        value={editedText}
+        onChange={(e) => setEditedText(e.target.value)}
+        rows={4}
+        style={{ width: "100%" }}
+      />
       <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
         <button
           onClick={() => {
