@@ -92,5 +92,6 @@ details are public.
 
 ## Code of conduct
 
-Be respectful and constructive. Disagreements about technical direction are
+This project follows the [Contributor Covenant](./CODE_OF_CONDUCT.md). Be
+respectful and constructive — disagreements about technical direction are
 normal; personal attacks are not.
