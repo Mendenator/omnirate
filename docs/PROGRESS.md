@@ -100,16 +100,22 @@
 | S-19 | Хайлтын load test 500 RPS + failover | ✅ | `infra/loadtest/k6/search_failover_load_test.js` |
 | S-20 | Эцсийн usability + WCAG аудит | ✅ автомат хэсэг / ⛔ хүний тест | `apps/web/e2e/accessibility.spec.ts` (axe-core) — бодит 20 хэрэглэгчийн usability тест хийгдээгүй |
 
-## Баталгаажуулалтын хязгаарлалт (энэ орчинд)
+## Баталгаажуулалтын явдал
 
-Энэ орчинд Docker болон сүлжээний хандалт байхгүй тул дараах зүйлсийг **бичсэн боловч бодитоор ажиллуулж шалгаагүй**:
+**`docker compose up` бүрэн стек болон `pytest` бодитоор ажиллуулж шалгасан** (Docker Desktop + Python 3.12 суулгасны дараа): бүх 7 сервис (postgres, redis, opensearch, prometheus, grafana, backend, worker) эрүүл ажиллаж, 13 Alembic migration бүгд амжилттай орж, **169/169 backend тест live Postgres/Redis/OpenSearch эсрэг амжилттай давсан**.
 
-- `pytest` (Postgres, Redis, OpenSearch container шаардана) — `apps/backend/tests/`
-- `docker compose up` бүрэн стек
+Энэ явцад олдож засагдсан бодит алдаанууд (git history-д дэлгэрэнгүй):
+- `infra/postgres/Dockerfile`: Debian 11 bullseye EOL → archive.debian.org, libxml2 downgrade зөрчил, pgvector огт суулгаагүй байсан, pg_jsonschema.so нэрний алдаа.
+- `docker-compose.yml`: opensearch healthcheck дутуу байсан тул backend/worker эрт унаж байсан.
+- 5 worker файл: `redis_settings` нь `@staticmethod` байсан нь arq-тай зөрчилдсөн (жинхэнэ RedisSettings объект байх ёстой).
+- `app/workers/indexer.py`: forward-reference алдаа (`noop_heartbeat` class-аас доор тодорхойлогдсон байсан).
+- 3 API response model (`complaints.py`, `moderation_queue.py`, `takedown.py`): `id: str` бодит баганын төрөл `uuid.UUID`-тай зөрчилдсөн.
+- Тестийн fixture: `client` fixture-ийн зохиомол хэрэглэгч бодит `users` мөр байгаагүй тул FK constraint зөрчиж байсан.
+
+Одоо хараахан шалгаагүй:
 - `terraform plan/apply` (AWS эрх шаардана)
 - GitHub branch protection (repo, `gh` CLI эрх шаардана — `.github/workflows/ci.yml` мержлэхээс өмнө **Settings → Branches**-д гараар асаана уу)
-
-Python синтаксийг `py_compile`-аар шалгасан (алдаагүй), гэхдээ import/runtime түвшний алдаа байж болзошгүй тул эхний CI ажиллуулалт дээр засвар шаардагдаж магадгүй.
+- `apps/web`, `apps/mobile`-ийн `npm install`/build (Node.js орчин энэ сесст суулгаагүй)
 
 ## Дараагийн алхам
 
