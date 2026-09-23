@@ -1,9 +1,9 @@
-import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { verifyOtp } from "../lib/api";
+import { setToken } from "../lib/tokenStorage";
 import type { RootStackParamList } from "../App";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Auth">;
@@ -20,7 +20,7 @@ export default function AuthScreen({ navigation }: Props) {
     setError(null);
     try {
       const { access_token } = await verifyOtp(phone, otp);
-      await SecureStore.setItemAsync("omnirate_access_token", access_token);
+      await setToken("omnirate_access_token", access_token);
       navigation.replace("Home");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Нэвтрэхэд алдаа гарлаа");

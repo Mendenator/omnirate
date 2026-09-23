@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "OmniRate",
+    "slug": "omnirate-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "mn.omnirate.mobile"
+    },
+    "android": {
+      "package": "mn.omnirate.mobile"
+    },
+    "plugins": ["expo-asset"]
+  }
+}

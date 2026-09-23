@@ -1,8 +1,9 @@
+import { getToken } from "./tokenStorage";
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function authHeader(): Promise<Record<string, string>> {
-  const SecureStore = await import("expo-secure-store");
-  const token = await SecureStore.getItemAsync("omnirate_access_token");
+  const token = await getToken("omnirate_access_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from arq import create_pool
 from arq.connections import RedisSettings
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 
 from app.api.v1.router import api_router
@@ -33,6 +34,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="OmniRate API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(RateLimitMiddleware)
+# apps/mobile (Expo web target) calls this API cross-origin directly, unlike
+# apps/web which proxies same-origin through Next.js — without this, every
+# request from Expo web fails at the browser's CORS preflight before it ever
+# reaches a route (found by actually running the Expo web build against
+# this backend, not by inspection).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(api_router)
 
 configure_tracing(app)

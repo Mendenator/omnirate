@@ -121,10 +121,18 @@
 
 **`npm run build` (production build) бодитоор ажиллуулж шалгасан.** Эхний оролдлогод бодит алдаа олдсон: Next.js 15 бүх dynamic route-ийн `params` prop-ыг synchronous object-ээс **Promise** болгож өөрчилсөн (breaking change), гэтэл `[branch]/[category]`, `entities/[id]`, `entities/[id]/review` — 3 хуудас хуучин (Next 14 хэлбэрийн) synchronous `params: { id: string }` төрөлтэй байсан тул `next build`-ийн type-check үед амжилтгүй болсон (`next dev`-д харагддаггүй, зөвхөн production build-ийн type-check илрүүлдэг). Бүх 3 файлыг `params: Promise<...>` + `await params`-руу засаж, дахин ажиллуулахад 8 route бүгд амжилттай (7/7 static+dynamic хуудас), production server-ийг бодитоор эхлүүлж 4 route (`/`, `/search`, `/admin/schemas`, dynamic `/entities/[id]`) 200 буцааж, live backend-ээс өгөгдөл зөв татаж байгааг баталгаажуулсан.
 
+**`apps/mobile` бодитоор ажиллуулж шалгасан.** Энэ орчинд iOS/Android simulator байхгүй тул Expo-ийн web target (`react-native-web`) ашиглан built-in browser-т ажиллуулсан — зөвхөн энэ сессийн шалгалтын зорилготой, SOW өөрөө "iOS/Android-аас бусад платформ" хамрахгүй гэж заасан. `npm install` (904 сан) хийхэд шууд **бодит алдаа** гарсан: `expo-asset` package (Metro-ийн asset plugin-д заавал шаардлагатай) `package.json`-д огт зарлагдаагүй байсан тул Metro эхлэхээс өмнө crash хийсэн; `npx expo install expo-asset`-ээр нэмж засав. Дараа нь бүтэн Нэвтрэх (OTP/L1) урсгалыг бодитоор туршихад 2 бодит алдаа олдож засагдсан:
+- **CORS**: backend-д `CORSMiddleware` огт тохируулаагүй байсан тул Expo web-ээс шууд (cross-origin) fetch хийхэд browser блоклосон (`apps/web` Next.js rewrite proxy ашигладаг тул энэ алдаанд өртдөггүй байсан, зөвхөн mobile шууд дуудахад л илэрсэн). `app/core/config.py`-д `cors_allowed_origins`, `app/main.py`-д `CORSMiddleware` нэмсэн.
+- **`expo-secure-store` нь web-ийг огт дэмждэггүй** (`setValueWithKeyAsync is not a function`) — `lib/tokenStorage.ts` үүсгэж, native дээр SecureStore, web дээр `localStorage`-руу (зөвхөн dev/test зорилгоор, аюулгүй байдлын хувьд тэнцүү биш гэдгийг тэмдэглэсэн) шилжих Platform-based wrapper бичсэн.
+
+Засварласны дараа **бүтэн E2E урсгал бодитоор давсан**: утасны дугаар+OTP оруулж, Нэвтрэх дарахад — жинхэнэ backend руу хүсэлт очиж, JWT олгогдож, Postgres-д бодит `users` мөр (`poe_level=L1`) үүсэж, Home дэлгэц рүү шилжсэн (баталгаажуулалт: шууд Postgres query-ээр).
+
+Мөн: анхны `apps/mobile/app.json` байхгүй байсан (Expo CLI автоматаар хоосон stub үүсгэсэн) — зохих нэр/slug/bundleIdentifier-тэй бүрэн бичсэн.
+
 Одоо хараахан шалгаагүй:
 - `terraform plan/apply` (AWS эрх шаардана)
 - GitHub branch protection (repo, `gh` CLI эрх шаардана — `.github/workflows/ci.yml` мержлэхээс өмнө **Settings → Branches**-д гараар асаана уу)
-- `apps/mobile`-ийн `npm install`/Expo build
+- `apps/mobile`-ийг бодит iOS/Android simulator дээр (expo-camera QR scanner, expo-location зэрэг native-only функцууд web дээр шалгагдаагүй)
 
 ## Дараагийн алхам
 

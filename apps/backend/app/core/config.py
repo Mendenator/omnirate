@@ -66,6 +66,13 @@ class Settings(BaseSettings):
 
     rate_limit_default_per_minute: int = 120
 
+    # apps/web calls the API through Next.js's own server-side rewrite proxy
+    # (same-origin, no CORS involved), but apps/mobile's Expo web target
+    # calls it directly cross-origin — CORS has to be explicit for that to
+    # work at all. Dev defaults cover both dev servers; override in
+    # non-dev environments rather than widening this.
+    cors_allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:8081", "http://localhost:19006"]
+
 
 @lru_cache
 def get_settings() -> Settings:
