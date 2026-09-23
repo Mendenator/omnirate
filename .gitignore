@@ -17,6 +17,8 @@ build/
 .next/
 .expo/
 *.log
+test-results/
+playwright-report/
 
 # Env / secrets
 .env

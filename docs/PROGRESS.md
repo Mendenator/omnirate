@@ -117,10 +117,12 @@
 - Нүүр хуудас, `/search` (zero-result fallback K11 зурвас зөв харагдана)
 - `/admin/schemas` (K7 builder) — **бүтэн E2E урсгал бодитоор шалгагдсан**: React UI-аас категори нэмж, `/api/backend/*` rewrite proxy-гоор жинхэнэ FastAPI backend руу, тэндээс live Postgres руу мөр бичигдэж, буцаж GET-ээр баталгаажсан (Кирилл текст — `label_mn: "Хоолны төрөл"` — гэмтэлгүй round-trip хийсэн).
 
+**Playwright e2e (P1-17) + axe-core WCAG аудит (S-20) бодитоор ажиллуулж шалгасан**: Chromium суулгаж, `apps/web/e2e/`-ийн бүх **7 тест 7/7 давсан** (нэг тест эхлээд entity өгөгдөл дутуу тул алгассан байсан ч жинхэнэ entity Postgres-д үүсгээд дахин ажиллуулахад давсан). `/`, `/search`, `/admin/schemas`, `/tur-alba` — 4 хуудсанд critical/serious WCAG 2.2 AA зөрчил **0**.
+
 Одоо хараахан шалгаагүй:
 - `terraform plan/apply` (AWS эрх шаардана)
 - GitHub branch protection (repo, `gh` CLI эрх шаардана — `.github/workflows/ci.yml` мержлэхээс өмнө **Settings → Branches**-д гараар асаана уу)
-- `apps/web`-ийн Playwright e2e/axe-core тест, `npm run build` (production build)
+- `npm run build` (production build)
 - `apps/mobile`-ийн `npm install`/Expo build
 
 ## Дараагийн алхам
