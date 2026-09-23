@@ -3,6 +3,8 @@ middleware as every other route (app/core/rate_limit.py); full triage queue
 UX lands with P2-12.
 """
 
+import uuid
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +24,11 @@ class ComplaintCreateRequest(BaseModel):
 
 
 class ComplaintResponse(BaseModel):
-    id: str
+    # Complaint.id is a uuid.UUID column — a plain `str` field rejects it
+    # outright under Pydantic v2 (no UUID->str coercion), which only ever
+    # surfaced once this endpoint ran against a real Postgres row instead of
+    # a ConnectionRefusedError before reaching response serialization.
+    id: uuid.UUID
     status: str
 
     model_config = {"from_attributes": True}

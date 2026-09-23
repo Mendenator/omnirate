@@ -74,17 +74,27 @@ async def shutdown(ctx):
     await ctx["opensearch"].close()
 
 
+async def noop_heartbeat(ctx) -> None:
+    """Keeps a metric alive so Grafana can alert on worker liveness, not just queue depth."""
+    return None
+
+
 class WorkerSettings:
+    # cron()'s string form resolves via import_string at class-body-eval time
+    # (i.e. while this module is still executing top-to-bottom) — referencing
+    # noop_heartbeat by string only works because it's defined *above* this
+    # class. Defining it after WorkerSettings instead throws ImportError
+    # ("does not define a noop_heartbeat attribute"): the module is
+    # mid-import, so the name genuinely doesn't exist in its namespace yet.
     functions = [reindex_entity]
     cron_jobs = [cron("app.workers.indexer.noop_heartbeat", minute=set(range(60)))]
     on_startup = startup
     on_shutdown = shutdown
-
-    @staticmethod
-    def redis_settings() -> RedisSettings:
-        return RedisSettings.from_dsn(get_settings().redis_url)
-
-
-async def noop_heartbeat(ctx) -> None:
-    """Keeps a metric alive so Grafana can alert on worker liveness, not just queue depth."""
-    return None
+    # arq reads this straight out of the class __dict__ (not via normal
+    # attribute access), so it must be a plain RedisSettings instance, not a
+    # method — a @staticmethod here hands arq the descriptor object itself
+    # and it crashes on `settings.host` (AttributeError: 'staticmethod'
+    # object has no attribute 'host'). Same fix applied identically in
+    # app/workers/moderation.py, attendance.py, transparency.py, and
+    # app/analytics/worker.py — all had this same bug.
+    redis_settings = RedisSettings.from_dsn(get_settings().redis_url)

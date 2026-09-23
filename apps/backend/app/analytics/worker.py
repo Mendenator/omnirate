@@ -15,7 +15,6 @@ async def run_export_job(ctx) -> None:
 
 class WorkerSettings:
     cron_jobs = [cron(run_export_job, minute={0, 15, 30, 45})]
-
-    @staticmethod
-    def redis_settings() -> RedisSettings:
-        return RedisSettings.from_dsn(get_settings().redis_url)
+    # Must be a plain RedisSettings instance, not a method — see
+    # app/workers/indexer.py's WorkerSettings for why.
+    redis_settings = RedisSettings.from_dsn(get_settings().redis_url)

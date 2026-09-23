@@ -10,6 +10,7 @@ from app.core.deps import CurrentUser, get_current_user
 from app.db.base import Base
 from app.db.session import get_db
 from app.domain import models  # noqa: F401
+from app.domain.models import User
 from app.main import app
 
 
@@ -44,6 +45,19 @@ async def client(engine):
             yield session
 
     fake_user = CurrentUser(user_id=uuid.uuid4(), rd_hash="test-rd-hash", poe_level="L2")
+
+    # A live Postgres enforces reviews.user_id / complaints.reporter_id /
+    # takedown_requests.requester_id -> users.id — fake_user has to actually
+    # exist as a row, not just as the CurrentUser Python object the auth
+    # dependency override hands back, or any test that performs a real
+    # insert (not just an error-path 4xx) hits a FK violation. Invisible
+    # under sqlite-style/no-FK test setups; only surfaced once tests ran
+    # against real Postgres for the first time.
+    async with session_factory() as seed_session:
+        seed_session.add(
+            User(id=fake_user.user_id, rd_hash=fake_user.rd_hash, display_name="Test User", poe_level=fake_user.poe_level)
+        )
+        await seed_session.commit()
 
     app.dependency_overrides[get_db] = _get_db
     app.dependency_overrides[get_current_user] = lambda: fake_user

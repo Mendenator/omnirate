@@ -85,10 +85,9 @@ async def startup(ctx):
 class WorkerSettings:
     functions = [moderate_review]
     on_startup = startup
-
-    @staticmethod
-    def redis_settings() -> RedisSettings:
-        return RedisSettings.from_dsn(get_settings().redis_url)
+    # Must be a plain RedisSettings instance, not a method — see
+    # app/workers/indexer.py's WorkerSettings for why.
+    redis_settings = RedisSettings.from_dsn(get_settings().redis_url)
 
     # arq built-in retry: a job that raises is retried up to max_tries with
     # backoff; job.info() is inspected by infra/observability alerts.yml's

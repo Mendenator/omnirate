@@ -26,6 +26,17 @@ services:
       DISABLE_SECURITY_PLUGIN: "true"
       OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
     ports: ["9200:9200"]
+    healthcheck:
+      # JVM startup + cluster formation genuinely takes 30-60s+ — without
+      # this, backend/worker previously started as soon as the *container*
+      # started (not once OpenSearch was actually accepting connections) and
+      # crashed on their first request. start_period gives it room before
+      # failures count against retries.
+      test: ["CMD-SHELL", "curl -s -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
 
   prometheus:
     image: prom/prometheus:v2.55.1
@@ -56,6 +67,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_started }
+      opensearch: { condition: service_healthy }
 
   worker:
     build: ./apps/backend
@@ -68,6 +80,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_started }
+      opensearch: { condition: service_healthy }
 
 volumes:
   pgdata:

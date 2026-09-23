@@ -63,6 +63,30 @@ RUN git clone --depth 1 --branch v0.3.3 https://github.com/supabase/pg_jsonschem
 WORKDIR /tmp/pg_jsonschema
 RUN cargo pgrx install --release --pg-config "$(which pg_config)"
 
+# cargo pgrx install names the built artifacts after the crate (pg_jsonschema),
+# not the SQL extension it registers (jsonschema_is_valid() etc., used by
+# apps/backend/alembic 0001's trigger) — pg_jsonschema.so /
+# pg_jsonschema.control / pg_jsonschema--0.3.3.sql, all prefixed.
 FROM postgis/postgis:16-3.4
-COPY --from=builder /usr/lib/postgresql/16/lib/jsonschema.so /usr/lib/postgresql/16/lib/
-COPY --from=builder /usr/share/postgresql/16/extension/jsonschema* /usr/share/postgresql/16/extension/
+COPY --from=builder /usr/lib/postgresql/16/lib/pg_jsonschema.so /usr/lib/postgresql/16/lib/
+COPY --from=builder /usr/share/postgresql/16/extension/pg_jsonschema* /usr/share/postgresql/16/extension/
+
+# pgvector (P2-10, alembic 0007) — unlike pg_jsonschema, PGDG ships a
+# prebuilt package for this one (postgresql-16-pgvector), so no Rust/cargo
+# build needed. A fresh FROM starts this stage's filesystem over from the
+# unmodified base image, so it needs the same apt-source fix as the builder
+# stage above (a separate stage, not inherited) before `apt-get update` will
+# work at all — but NOT the libxml2 pin, which was specific to
+# postgresql-server-dev-16's dependency chain and doesn't come up here.
+# This does pull in a postgresql-16 point-release bump as a side effect
+# (PGDG's pgvector build depends on a newer postgresql-16 than the base
+# image shipped) — expected and compatible within the 16.x line.
+RUN sed -i \
+        -e '/debian-security/d' \
+        -e 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' \
+        /etc/apt/sources.list \
+    && echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until \
+    && DEBIAN_FRONTEND=noninteractive apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        postgresql-16-pgvector \
+    && rm -rf /var/lib/apt/lists/*

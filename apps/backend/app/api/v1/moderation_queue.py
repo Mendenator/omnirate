@@ -4,6 +4,7 @@ yet (see docs/PROGRESS.md); adding one is a P3 admin-hardening task, not
 blocked on anything external.
 """
 
+import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -20,8 +21,11 @@ router = APIRouter(prefix="/api/v1/moderation", tags=["moderation-queue"])
 
 
 class CaseResponse(BaseModel):
-    id: str
-    review_id: str
+    # See app/api/v1/complaints.py's ComplaintResponse for why these are
+    # uuid.UUID, not str — the underlying columns are UUID and Pydantic v2
+    # doesn't coerce UUID -> str for a plain `str` field.
+    id: uuid.UUID
+    review_id: uuid.UUID
     state: str
 
     model_config = {"from_attributes": True}

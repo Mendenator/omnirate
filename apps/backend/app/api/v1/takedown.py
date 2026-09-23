@@ -1,5 +1,6 @@
 """Takedown + law-enforcement portal endpoints (P3-05/P3-06)."""
 
+import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -29,9 +30,12 @@ class LawEnforcementRequestCreate(BaseModel):
 
 
 class TakedownResponse(BaseModel):
-    id: str
+    # Both endpoints below return the raw ORM row — id is uuid.UUID and
+    # sla_deadline is datetime, not str. See ComplaintResponse in
+    # app/api/v1/complaints.py for why a plain `str` field rejects them.
+    id: uuid.UUID
     status: str
-    sla_deadline: str
+    sla_deadline: datetime
 
     model_config = {"from_attributes": True}
 

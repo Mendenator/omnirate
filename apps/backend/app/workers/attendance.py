@@ -25,7 +25,6 @@ async def startup(ctx):
 class WorkerSettings:
     cron_jobs = [cron(run_daily_import, hour={3}, minute={0})]  # 03:00 local — low-traffic window
     on_startup = startup
-
-    @staticmethod
-    def redis_settings() -> RedisSettings:
-        return RedisSettings.from_dsn(get_settings().redis_url)
+    # Must be a plain RedisSettings instance, not a method — see
+    # app/workers/indexer.py's WorkerSettings for why.
+    redis_settings = RedisSettings.from_dsn(get_settings().redis_url)

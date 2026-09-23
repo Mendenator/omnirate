@@ -23,7 +23,6 @@ async def run_monthly_report(ctx) -> None:
 
 class WorkerSettings:
     cron_jobs = [cron(run_monthly_report, day={1}, hour={2}, minute={0})]
-
-    @staticmethod
-    def redis_settings() -> RedisSettings:
-        return RedisSettings.from_dsn(get_settings().redis_url)
+    # Must be a plain RedisSettings instance, not a method — see
+    # app/workers/indexer.py's WorkerSettings for why.
+    redis_settings = RedisSettings.from_dsn(get_settings().redis_url)

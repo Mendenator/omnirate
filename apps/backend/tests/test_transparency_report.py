@@ -2,14 +2,26 @@ import uuid
 from datetime import UTC, datetime
 
 from app.analytics.transparency_report import generate_monthly_report, render_markdown
-from app.domain.models import Complaint, TakedownRequest
+from app.domain.models import Complaint, TakedownRequest, User
+
+
+async def _seed_user(db_session) -> uuid.UUID:
+    # Complaint.reporter_id is a real FK to users.id (unlike
+    # TakedownRequest.requester_id, which is deliberately unconstrained —
+    # see app/domain/models.py) — a live Postgres rejects a Complaint insert
+    # referencing a user_id that doesn't exist.
+    user_id = uuid.uuid4()
+    db_session.add(User(id=user_id, rd_hash=str(user_id), display_name="Test Reporter", poe_level="L2"))
+    await db_session.flush()
+    return user_id
+
 
 PERIOD_START = datetime(2026, 9, 1, tzinfo=UTC)
 PERIOD_END = datetime(2026, 10, 1, tzinfo=UTC)
 
 
 async def test_report_counts_takedowns_and_complaints_in_period(db_session):
-    reporter_id = uuid.uuid4()
+    reporter_id = await _seed_user(db_session)
 
     db_session.add(
         Complaint(reporter_id=reporter_id, target_type="review", target_id=uuid.uuid4(), reason="spam", status="resolved")
@@ -50,9 +62,10 @@ async def test_report_counts_takedowns_and_complaints_in_period(db_session):
 
 
 async def test_report_excludes_rows_outside_period(db_session):
+    reporter_id = await _seed_user(db_session)
     db_session.add(
         Complaint(
-            reporter_id=uuid.uuid4(),
+            reporter_id=reporter_id,
             target_type="review",
             target_id=uuid.uuid4(),
             reason="spam",
