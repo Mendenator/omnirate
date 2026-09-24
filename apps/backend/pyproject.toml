@@ -7,6 +7,11 @@ dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
     "sqlalchemy>=2.0",
+    # Not pulled transitively by "sqlalchemy>=2.0" alone on every resolver
+    # run (only guaranteed via the "sqlalchemy[asyncio]" extra) — but the
+    # async engine needs it to import at all, and [tool.coverage.run]'s
+    # concurrency = ["greenlet", "thread"] below needs it installed too.
+    "greenlet>=3.0",
     "asyncpg>=0.30",
     "alembic>=1.14",
     "pydantic>=2.9",
