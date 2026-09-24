@@ -52,3 +52,16 @@ def compute_bayesian_trimmed_score(
     numerator = prior_confidence * prior_mean + weighted_sum
     denominator = prior_confidence + weight_total
     return round(numerator / denominator, 4) if denominator > 0 else round(prior_mean, 4)
+
+
+def compute_criteria_breakdown(criteria_scores_list: list[dict[str, float]]) -> dict[str, float]:
+    """Per-criterion average across the reviews that scored it (P1-10 entity
+    page's "criteria_breakdown" section). A criterion present on only some
+    reviews is averaged over just those, not padded with zeros for the rest."""
+    sums: dict[str, float] = {}
+    counts: dict[str, int] = {}
+    for scores in criteria_scores_list:
+        for key, value in scores.items():
+            sums[key] = sums.get(key, 0.0) + value
+            counts[key] = counts.get(key, 0) + 1
+    return {key: round(sums[key] / counts[key], 2) for key in sums}

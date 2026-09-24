@@ -1,3 +1,7 @@
+import uuid
+
+from app.domain.models import Review, User
+
 RESTORAN_SCHEMA = {"type": "object", "properties": {"cuisine": {"type": "string"}}}
 
 
@@ -82,3 +86,87 @@ async def test_idempotency_key_replay_returns_cached_response(client):
 
     assert first.status_code == second.status_code == 201
     assert first.json()["id"] == second.json()["id"]
+
+
+async def _seed_review(db_session, *, entity_id, overall_score, criteria_scores=None, poe_level="L2", is_blocked=False):
+    user = User(rd_hash=f"rd-{uuid.uuid4()}", display_name="Seeded user", poe_level=poe_level)
+    db_session.add(user)
+    await db_session.flush()
+    review = Review(
+        entity_id=entity_id,
+        user_id=user.id,
+        poe_level=poe_level,
+        overall_score=overall_score,
+        criteria_scores=criteria_scores or {},
+        is_blocked=is_blocked,
+    )
+    db_session.add(review)
+    await db_session.commit()
+    return review
+
+
+async def test_get_entity_with_no_reviews_falls_back_to_prior(client):
+    await _publish_schema(client)
+    entity = await _create_entity(client)
+
+    resp = await client.get(f"/api/v1/entities/{entity['id']}")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["score"] == 3.5  # CATEGORY_PRIOR_MEAN, no reviews to pull it anywhere
+    assert body["review_count"] == 0
+    assert body["verified_review_count"] == 0
+    assert body["criteria_breakdown"] == {}
+
+
+async def test_get_entity_reflects_criteria_breakdown_and_verified_count(client, db_session):
+    await _publish_schema(client)
+    entity = await _create_entity(client)
+    entity_id = entity["id"]
+
+    await _seed_review(db_session, entity_id=entity_id, overall_score=5.0, criteria_scores={"food": 5.0}, poe_level="L4")
+    await _seed_review(db_session, entity_id=entity_id, overall_score=3.0, criteria_scores={"food": 3.0}, poe_level="L0")
+
+    resp = await client.get(f"/api/v1/entities/{entity_id}")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["review_count"] == 2
+    assert body["verified_review_count"] == 1  # only the L4 review counts as verified
+    assert body["criteria_breakdown"] == {"food": 4.0}
+    assert 0 <= body["score"] <= 5
+
+
+async def test_get_entity_excludes_blocked_reviews(client, db_session):
+    await _publish_schema(client)
+    entity = await _create_entity(client)
+    entity_id = entity["id"]
+
+    await _seed_review(db_session, entity_id=entity_id, overall_score=5.0, criteria_scores={"food": 5.0})
+    await _seed_review(db_session, entity_id=entity_id, overall_score=0.5, criteria_scores={"food": 0.5}, is_blocked=True)
+
+    resp = await client.get(f"/api/v1/entities/{entity_id}")
+
+    body = resp.json()
+    assert body["review_count"] == 1
+    assert body["criteria_breakdown"] == {"food": 5.0}
+
+
+async def test_list_reviews_excludes_blocked_and_orders_newest_first(client, db_session):
+    await _publish_schema(client)
+    entity = await _create_entity(client)
+    entity_id = entity["id"]
+
+    visible = await _seed_review(db_session, entity_id=entity_id, overall_score=4.0)
+    await _seed_review(db_session, entity_id=entity_id, overall_score=1.0, is_blocked=True)
+
+    resp = await client.get(f"/api/v1/entities/{entity_id}/reviews")
+
+    assert resp.status_code == 200
+    ids = [r["id"] for r in resp.json()]
+    assert ids == [str(visible.id)]
+
+
+async def test_list_reviews_for_missing_entity_is_404(client):
+    resp = await client.get(f"/api/v1/entities/{uuid.uuid4()}/reviews")
+    assert resp.status_code == 404

@@ -8,6 +8,7 @@ interface EntitySummary {
   name: string;
   branch_slug: string;
   category_slug: string;
+  score?: number;
 }
 
 interface SearchResponse {
@@ -74,6 +75,7 @@ export default function SearchClient() {
           {data?.results.map((e) => (
             <li key={e.entity_id}>
               <Link href={`/entities/${e.entity_id}`}>{e.name}</Link> — {e.category_slug}
+              {typeof e.score === "number" && <> — {e.score.toFixed(1)} / 5</>}
             </li>
           ))}
         </ul>

@@ -8,6 +8,20 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Added
+
+- Entity page display side (P1-10): `GET /api/v1/entities/{id}` now returns
+  a live-computed Bayesian score, review/verified-review counts, and a
+  per-criterion score breakdown; a new `GET /api/v1/entities/{id}/reviews`
+  lists an entity's non-blocked reviews. The web entity page renders all of
+  this (score summary, criteria breakdown, review list with dates and PoE
+  badges, map link, owner-reply section), replacing what was previously
+  header-only placeholder sections. Listing (`/[branch]/[category]`) and
+  search results now show each entity's score inline.
+- `app/domain/scoring.compute_criteria_breakdown`, a pure per-criterion
+  averaging function, plus `EntityResponse.lat`/`lon` exposure needed for
+  the new map-link rendering.
+
 ## [0.1.3] - 2026-09-24
 
 ### Added

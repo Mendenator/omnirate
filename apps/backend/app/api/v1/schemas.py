@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -24,8 +25,37 @@ class EntityResponse(BaseModel):
     name: str
     ttd: str | None
     location_slug: str | None
+    lat: float | None
+    lon: float | None
     attributes: dict[str, Any]
     verified: bool
+
+    model_config = {"from_attributes": True}
+
+
+class EntityDetailResponse(EntityResponse):
+    """GET /entities/{id}: EntityResponse plus what the entity page's
+    summary/criteria_breakdown sections need, computed live from the
+    entity's non-blocked reviews (P1-10)."""
+
+    score: float
+    review_count: int
+    verified_review_count: int
+    criteria_breakdown: dict[str, float]
+
+
+class ReviewListItem(BaseModel):
+    """Public-facing review shape for GET /entities/{id}/reviews — omits
+    user_id (no reviewer identity beyond poe_level is shown publicly)."""
+
+    id: uuid.UUID
+    poe_level: str
+    overall_score: float
+    criteria_scores: dict[str, float]
+    body: str | None
+    owner_reply_body: str | None
+    owner_reply_at: datetime | None
+    created_at: datetime
 
     model_config = {"from_attributes": True}
 

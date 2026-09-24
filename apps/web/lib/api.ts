@@ -12,6 +12,8 @@ export interface EntitySummary {
   branch_slug: string;
   category_slug: string;
   location_slug?: string | null;
+  score?: number;
+  n_verified?: number;
 }
 
 export interface EntityDetail {
@@ -20,8 +22,25 @@ export interface EntityDetail {
   branch_slug: string;
   category_slug: string;
   location_slug: string | null;
+  lat: number | null;
+  lon: number | null;
   attributes: Record<string, unknown>;
   verified: boolean;
+  score: number;
+  review_count: number;
+  verified_review_count: number;
+  criteria_breakdown: Record<string, number>;
+}
+
+export interface ReviewListItem {
+  id: string;
+  poe_level: string;
+  overall_score: number;
+  criteria_scores: Record<string, number>;
+  body: string | null;
+  owner_reply_body: string | null;
+  owner_reply_at: string | null;
+  created_at: string;
 }
 
 export interface CategorySchema {

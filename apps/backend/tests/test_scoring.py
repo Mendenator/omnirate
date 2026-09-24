@@ -1,4 +1,4 @@
-from app.domain.scoring import ScoredReview, compute_bayesian_trimmed_score
+from app.domain.scoring import ScoredReview, compute_bayesian_trimmed_score, compute_criteria_breakdown
 
 
 def test_no_reviews_returns_prior_mean():
@@ -36,3 +36,17 @@ def test_trimming_removes_extreme_outliers():
     reviews.append(ScoredReview(overall_score=0.0, poe_level="L4", fraud_score=0.0))
     score = compute_bayesian_trimmed_score(reviews, prior_mean=4.0, prior_confidence=10, trim_fraction=0.05)
     assert score == 4.0
+
+
+def test_criteria_breakdown_averages_each_key_independently():
+    breakdown = compute_criteria_breakdown(
+        [
+            {"food": 5.0, "service": 4.0},
+            {"food": 3.0},
+        ]
+    )
+    assert breakdown == {"food": 4.0, "service": 4.0}
+
+
+def test_criteria_breakdown_of_no_reviews_is_empty():
+    assert compute_criteria_breakdown([]) == {}
