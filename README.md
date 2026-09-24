@@ -12,6 +12,8 @@ Polymorphic Rating & Proof-of-Experience Engine — монорепо.
 
 Хэрэгжилт нь [`OmniRate SOW v2.md`](./OmniRate%20SOW%20v2.md) баримтад заасан даалгаврын задаргаагаар явна (P0 → P1 → P2 → P3, S-01…S-20). Ажлын явцын бүртгэл: [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
+> 📄 **[Мэргэжлийн бус хүнд зориулсан тайлан](https://claude.ai/artifact/Ej7rN32MerYjb6LBZ46krC)** — юу хийгдсэн, яагаад итгэж болохыг техникийн мэдлэггүй хүнд ч ойлгомжтой энгийн үгээр тайлбарласан гүйцэтгэлийн тайлан.
+
 ## Бүтэц
 
 ```
