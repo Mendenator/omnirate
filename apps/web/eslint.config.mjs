@@ -1,27 +1,15 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// eslint-config-next ships legacy (eslintrc-style) configs; FlatCompat is
-// Next.js's own documented bridge for consuming them under ESLint 9's flat
-// config, until eslint-config-next ships a native flat export.
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
+// eslint-config-next 16 ships native flat config (plain arrays) — the
+// FlatCompat bridge this used under eslint-config-next 15/ESLint 9 no
+// longer applies (eslint-config-next 16 doesn't even ship the legacy
+// eslintrc-style entry points FlatCompat needs).
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextCoreWebVitals,
+  ...nextTypescript,
   {
-    ignores: [
-      ".next/**",
-      "node_modules/**",
-      "playwright-report/**",
-      "test-results/**",
-      "next-env.d.ts",
-    ],
+    ignores: [".next/**", "node_modules/**", "playwright-report/**", "test-results/**", "next-env.d.ts"],
   },
 ];
 
