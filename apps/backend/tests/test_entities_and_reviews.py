@@ -124,8 +124,12 @@ async def test_get_entity_reflects_criteria_breakdown_and_verified_count(client,
     entity = await _create_entity(client)
     entity_id = entity["id"]
 
-    await _seed_review(db_session, entity_id=entity_id, overall_score=5.0, criteria_scores={"food": 5.0}, poe_level="L4")
-    await _seed_review(db_session, entity_id=entity_id, overall_score=3.0, criteria_scores={"food": 3.0}, poe_level="L0")
+    await _seed_review(
+        db_session, entity_id=entity_id, overall_score=5.0, criteria_scores={"food": 5.0}, poe_level="L4"
+    )
+    await _seed_review(
+        db_session, entity_id=entity_id, overall_score=3.0, criteria_scores={"food": 3.0}, poe_level="L0"
+    )
 
     resp = await client.get(f"/api/v1/entities/{entity_id}")
 
@@ -143,7 +147,9 @@ async def test_get_entity_excludes_blocked_reviews(client, db_session):
     entity_id = entity["id"]
 
     await _seed_review(db_session, entity_id=entity_id, overall_score=5.0, criteria_scores={"food": 5.0})
-    await _seed_review(db_session, entity_id=entity_id, overall_score=0.5, criteria_scores={"food": 0.5}, is_blocked=True)
+    await _seed_review(
+        db_session, entity_id=entity_id, overall_score=0.5, criteria_scores={"food": 0.5}, is_blocked=True
+    )
 
     resp = await client.get(f"/api/v1/entities/{entity_id}")
 
