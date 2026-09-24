@@ -8,6 +8,27 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-24
+
+### Added
+
+- README: latest-release badge, and the 9-badge block reformatted into
+  a 3-column table (repo, build, release, license, activity) instead
+  of one long line of links.
+- The plain-language, non-technical progress report (published earlier
+  as a Claude Artifact) is now pinned and cross-linked from
+  `README.md`, `docs/PROGRESS.md`, and `CONTRIBUTING.md`, and the
+  report itself (`docs/report.html`) links back to its own live,
+  shareable URL from its header.
+
+### Changed
+
+- Verified the `v0.1.0` GitHub Release's auto-generated source
+  archives (zip and tar.gz) download and extract correctly end to end
+  — this release exists specifically to catch `master` up to what that
+  verification found missing (the badge/doc-link commits above landed
+  after `v0.1.0` was tagged).
+
 ## [0.1.0] - 2026-09-24
 
 ### Added
