@@ -1,14 +1,12 @@
 # OmniRate
 
-[![GitHub](https://img.shields.io/badge/GitHub-Mendenator%2Fomnirate-181717?logo=github)](https://github.com/Mendenator/omnirate)
-[![CI](https://github.com/Mendenator/omnirate/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Mendenator/omnirate/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/releases/latest)
-[![codecov](https://codecov.io/gh/Mendenator/omnirate/branch/master/graph/badge.svg)](https://codecov.io/gh/Mendenator/omnirate)
-[![License](https://img.shields.io/github/license/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/blob/master/LICENSE)
-[![Open Issues](https://img.shields.io/github/issues/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/issues)
-[![Open PRs](https://img.shields.io/badge/Open%20PRs-0-brightgreen)](https://github.com/Mendenator/omnirate/pulls)
-[![Stars](https://img.shields.io/github/stars/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/stargazers)
-[![Last commit](https://img.shields.io/github/last-commit/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/commits/master)
+| | | |
+|---|---|---|
+| **Repo** | [![GitHub](https://img.shields.io/badge/GitHub-Mendenator%2Fomnirate-181717?logo=github)](https://github.com/Mendenator/omnirate) | [![Stars](https://img.shields.io/github/stars/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/stargazers) |
+| **Build** | [![CI](https://github.com/Mendenator/omnirate/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Mendenator/omnirate/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/Mendenator/omnirate/branch/master/graph/badge.svg)](https://codecov.io/gh/Mendenator/omnirate) |
+| **Release** | [![Release](https://img.shields.io/github/v/release/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/releases/latest) | [![Last commit](https://img.shields.io/github/last-commit/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/commits/master) |
+| **License** | [![License](https://img.shields.io/github/license/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/blob/master/LICENSE) | |
+| **Activity** | [![Open Issues](https://img.shields.io/github/issues/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/issues) | [![Open PRs](https://img.shields.io/badge/Open%20PRs-0-brightgreen)](https://github.com/Mendenator/omnirate/pulls) |
 
 Polymorphic Rating & Proof-of-Experience Engine — монорепо.
 
