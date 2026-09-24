@@ -107,17 +107,116 @@ jobs:
       - name: Build
         run: npm run build
 
-  # Split from `web` because it needs the live backend stack (custom Postgres
-  # image with pg_jsonschema/pgvector, OpenSearch, migrations) rather than
-  # just Node — see docs/PROGRESS.md for why the backend job's own Postgres
-  # service deliberately uses a lighter stock image instead of that build.
-  # Not yet wired up: doing this well needs (a) accepting the custom
-  # infra/postgres image's build time inside the 10-minute budget, and
-  # (b) a seed-data step for OMNIRATE_E2E_ENTITY_ID (currently that test
-  # just skips — see apps/web/e2e/critical-flows.spec.ts). Tracked as
-  # follow-up rather than rushed in here.
+  # Split from `web` because it needs the live backend stack, not just Node.
+  # Runs the backend directly via uvicorn (not the Dockerfile build the
+  # `backend` job does at the end) — much faster, and the point here is
+  # exercising the app, not the image. Postgres/OpenSearch are the same
+  # lightweight service images the `backend` job uses, not the full
+  # infra/postgres custom build (pg_jsonschema isn't needed by anything
+  # these flows touch — schema *publish* validates in Python via the
+  # `jsonschema` package, not the DB trigger).
+  #
+  # The "entity page renders sections in the uniform order" test still
+  # skips (no OMNIRATE_E2E_ENTITY_ID) — there's no seed-data step here,
+  # only what the "admin can define a new category" flow creates live.
   web-e2e:
     runs-on: ubuntu-latest
-    if: false
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: omnirate
+          POSTGRES_PASSWORD: omnirate
+          POSTGRES_DB: omnirate
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U omnirate" --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+      opensearch:
+        image: opensearchproject/opensearch:2.17.1
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: "true"
+          OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+        ports: ["9200:9200"]
+        options: >-
+          --health-cmd "curl -s -f http://localhost:9200/_cluster/health || exit 1"
+          --health-interval 5s --health-timeout 5s --health-retries 20 --health-start-period 60s
+
+    env:
+      OMNIRATE_DATABASE_URL: postgresql+asyncpg://omnirate:omnirate@localhost:5432/omnirate
+      OMNIRATE_REDIS_URL: redis://localhost:6379/0
+      OMNIRATE_OPENSEARCH_URL: http://localhost:9200
+      OMNIRATE_API_URL: http://localhost:8000
+
     steps:
-      - run: echo "web e2e CI pending full docker-compose stack + seed data"
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: apps/backend/.python-version
+          cache: pip
+
+      - name: Install backend deps
+        working-directory: apps/backend
+        run: pip install -e ".[dev]"
+
+      - name: Migrate database
+        working-directory: apps/backend
+        run: alembic upgrade head
+
+      - name: Start backend
+        working-directory: apps/backend
+        run: |
+          nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/healthz && exit 0
+            sleep 2
+          done
+          echo "backend never became healthy"; cat /tmp/backend.log; exit 1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install web deps
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Build web
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Start web
+        working-directory: apps/web
+        run: |
+          nohup npm run start > /tmp/web.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000 && exit 0
+            sleep 2
+          done
+          echo "web never became healthy"; cat /tmp/web.log; exit 1
+
+      - name: Run e2e (critical flows + WCAG 2.2 AA scan)
+        working-directory: apps/web
+        run: npm run e2e
+
+      - name: Upload logs and Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-debug
+          path: |
+            /tmp/backend.log
+            /tmp/web.log
+            apps/web/playwright-report/
+          retention-days: 7
