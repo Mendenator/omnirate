@@ -5,6 +5,10 @@ Thanks for your interest in OmniRate. This is a monorepo implementing the
 [`docs/PROGRESS.md`](./docs/PROGRESS.md) for current status and
 [`README.md`](./README.md) for the repo layout.
 
+> 📄 New here and want the non-technical version first? See the
+> [plain-language progress report](https://claude.ai/artifact/Ej7rN32MerYjb6LBZ46krC)
+> (in Mongolian).
+
 ## Before you start
 
 - Check [`docs/PROGRESS.md`](./docs/PROGRESS.md) and open issues/PRs first
