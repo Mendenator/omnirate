@@ -2,6 +2,7 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-Mendenator%2Fomnirate-181717?logo=github)](https://github.com/Mendenator/omnirate)
 [![CI](https://github.com/Mendenator/omnirate/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Mendenator/omnirate/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/releases/latest)
 [![codecov](https://codecov.io/gh/Mendenator/omnirate/branch/master/graph/badge.svg)](https://codecov.io/gh/Mendenator/omnirate)
 [![License](https://img.shields.io/github/license/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/blob/master/LICENSE)
 [![Open Issues](https://img.shields.io/github/issues/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/issues)
