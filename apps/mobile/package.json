@@ -21,8 +21,8 @@
     "expo-secure-store": "~14.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-native": "0.87.1",
-    "react-native-web": "~0.21.2"
+    "react-native": "0.76.3",
+    "react-native-web": "~0.19.13"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
