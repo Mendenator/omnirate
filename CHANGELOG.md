@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-25
+
 ### Added
 
 - Entity page display side (P1-10): `GET /api/v1/entities/{id}` now returns
@@ -21,6 +23,17 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 - `app/domain/scoring.compute_criteria_breakdown`, a pure per-criterion
   averaging function, plus `EntityResponse.lat`/`lon` exposure needed for
   the new map-link rendering.
+
+### Fixed
+
+- `apps/backend`'s dependency list declared `sqlalchemy>=2.0` without the
+  `[asyncio]` extra and never listed `greenlet` explicitly — a fresh
+  install had been relying on some other package pulling it in
+  transitively. That stopped happening (surfaced as CI's `backend`/
+  `web-e2e` jobs suddenly failing with `ModuleNotFoundError: No module
+  named 'greenlet'`, breaking both the async engine import and
+  `[tool.coverage.run]`'s `concurrency = ["greenlet", "thread"]`).
+  `greenlet` is now an explicit dependency.
 
 ## [0.1.3] - 2026-09-24
 
