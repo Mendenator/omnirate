@@ -112,9 +112,10 @@ jobs:
   # `backend` job does at the end) — much faster, and the point here is
   # exercising the app, not the image. Postgres/OpenSearch are the same
   # lightweight service images the `backend` job uses, not the full
-  # infra/postgres custom build (pg_jsonschema isn't needed by anything
-  # these flows touch — schema *publish* validates in Python via the
-  # `jsonschema` package, not the DB trigger).
+  # infra/postgres custom build — the schema is created via
+  # Base.metadata.create_all() rather than real Alembic migrations for the
+  # same reason (see the "Create database schema" step below); nothing
+  # these e2e flows touch needs postgis or pg_jsonschema.
   #
   # The "entity page renders sections in the uniform order" test still
   # skips (no OMNIRATE_E2E_ENTITY_ID) — there's no seed-data step here,
@@ -164,9 +165,15 @@ jobs:
         working-directory: apps/backend
         run: pip install -e ".[dev]"
 
-      - name: Migrate database
+      # Not `alembic upgrade head`: migration 0001 unconditionally does
+      # CREATE EXTENSION for postgis and pg_jsonschema, neither available on
+      # this lightweight service image (and neither actually used by app/ —
+      # postgis is unused, pg_jsonschema only backs a DB trigger). Same
+      # Base.metadata.create_all() approach the backend job's own tests
+      # already use successfully (tests/conftest.py's `engine` fixture).
+      - name: Create database schema
         working-directory: apps/backend
-        run: alembic upgrade head
+        run: python scripts/create_schema_for_e2e.py
 
       - name: Start backend
         working-directory: apps/backend
