@@ -68,7 +68,20 @@ jobs:
         env:
           OMNIRATE_DATABASE_URL: postgresql+asyncpg://omnirate:omnirate@localhost:5432/omnirate
           OMNIRATE_REDIS_URL: redis://localhost:6379/0
-        run: pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=80
+
+      # Needs the CODECOV_TOKEN repo secret (codecov.io -> sign in with
+      # GitHub -> add this repo -> copy its upload token) — Codecov has
+      # required a token for uploads, public repos included, since 2024.
+      # Without the secret this step just fails to upload; it doesn't fail
+      # the build (fail_ci_if_error: false) since the badge is informational,
+      # not a merge gate.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: apps/backend/coverage.xml
+          fail_ci_if_error: false
 
       - name: Build image
         run: docker build -t omnirate-backend:${{ github.sha }} .
