@@ -41,7 +41,7 @@ jobs:
         working-directory: apps/backend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v5
         with:
@@ -95,7 +95,7 @@ jobs:
         working-directory: apps/web
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -167,7 +167,7 @@ jobs:
       OMNIRATE_API_URL: http://localhost:8000
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v5
         with:
