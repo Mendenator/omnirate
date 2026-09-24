@@ -15,7 +15,7 @@
   "dependencies": {
     "@rjsf/core": "^6.10.1",
     "@rjsf/utils": "^5.23.0",
-    "@rjsf/validator-ajv8": "^5.23.0",
+    "@rjsf/validator-ajv8": "^6.10.1",
     "next": "^16.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
