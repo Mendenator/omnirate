@@ -3,12 +3,12 @@
 All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-This project has no tagged releases yet (pre-production); changes are
-grouped under `[Unreleased]` until the first release is cut. For
-day-to-day implementation status against the SOW task breakdown, see
-[`docs/PROGRESS.md`](./docs/PROGRESS.md).
+For day-to-day implementation status against the SOW task breakdown,
+see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
+
+## [0.1.0] - 2026-09-24
 
 ### Added
 
@@ -69,5 +69,43 @@ day-to-day implementation status against the SOW task breakdown, see
   policy at all.
 - Ran `pip-audit` and `npm audit` across all three apps; documented
   remaining advisories that require breaking major-version upgrades
-  (Next.js 15→16, Expo SDK) rather than force-applying them — see
-  [`SECURITY.md`](./SECURITY.md).
+  rather than force-applying them — see [`SECURITY.md`](./SECURITY.md).
+
+### Changed
+
+- **CI actually runs now.** `.github/workflows/ci.yml` was scoped to
+  trigger on `main`; the repo's real default branch is `master`, so it
+  had silently never triggered on any commit since it was added. Once
+  fixed, that first real run surfaced (and this release fixes) a chain
+  of previously-invisible gaps: 43 ruff line-length violations, 92
+  `mypy --strict` errors (including two real latent bugs — unchecked
+  `None` access in the PoE-evidence endpoints, and a wrong SQLAlchemy
+  result type in the hospital-QR replay check), a coverage measurement
+  bug (`coverage.py` needs `concurrency = ["greenlet", "thread"]` to
+  see inside SQLAlchemy's async/greenlet bridge — without it most
+  DB-touching code read as untested even when it wasn't), and a
+  Postgres service image that shipped PostGIS but not the `pgvector`
+  extension the schema actually needs. Backend test coverage went from
+  71.6% to 91.6% in the process. Added a `web-e2e` CI job running the
+  real Playwright suite against a live backend + Postgres + Redis +
+  OpenSearch stack.
+- **Major framework upgrades**, consolidated from 19 individually-
+  conflicting Dependabot PRs into two reviewed branches: `apps/web` to
+  Next.js 16, React 19, ESLint 10, `@rjsf/*` 6; `apps/mobile` to Expo
+  SDK 57 and React 19. TypeScript was deliberately held back on both
+  (7.0 hits real, current upstream blockers — `typescript-eslint`
+  refuses to run under it at all). Along the way, fixed a real ESLint
+  10 / `eslint-plugin-react` incompatibility (pinned
+  `settings.react.version` instead of leaving it on the now-broken
+  `"detect"` auto-detect path), two genuine `expo-doctor` gaps (missing
+  `react-navigation` peer deps, a duplicate `expo-asset` install), and
+  two more pre-existing type errors in `apps/mobile` (a
+  `@react-navigation/native-stack` typed-API `id` requirement, and a
+  `tsconfig.json` `module` setting that predated dynamic `import()`
+  support) — none of these were caused by the upgrades, all were
+  invisible until this cycle actually ran the checks for real.
+- Repo governance and tooling: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
+  `SECURITY.md`, `CODEOWNERS`, PR and issue templates, Dependabot
+  config, `.editorconfig`, `.nvmrc` / `.python-version`, and a Prettier
+  config for `apps/web` (applied once, repo-wide, so it starts
+  consistent rather than immediately failing its own check).
