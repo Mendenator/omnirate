@@ -22,7 +22,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Auth">
+      <Stack.Navigator id={undefined} initialRouteName="Auth">
         <Stack.Screen name="Auth" component={AuthScreen} options={{ title: "Нэвтрэх" }} />
         <Stack.Screen name="Home" component={HomeScreen} options={{ title: "OmniRate" }} />
         <Stack.Screen name="Review" component={ReviewScreen} options={{ title: "Үнэлгээ бичих" }} />

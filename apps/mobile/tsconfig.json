@@ -1,4 +1,12 @@
 {
-  "compilerOptions": {},
+  "compilerOptions": {
+    // expo/tsconfig.base sets target: "ESNext" but leaves `module` unset,
+    // which TS then defaults to a value that predates dynamic `import()`
+    // syntax support — lib/tokenStorage.ts's `await import("expo-secure-store")`
+    // fails to type-check as a result (TS1323). Metro/Babel does the actual
+    // bundling (tsc only type-checks here, per noEmit above), so this has
+    // no effect on runtime behavior.
+    "module": "ESNext"
+  },
   "extends": "expo/tsconfig.base"
 }
