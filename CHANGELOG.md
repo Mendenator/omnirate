@@ -8,6 +8,14 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-09-24
+
+### Added
+
+- Website badge in the README badge table, linking to the
+  plain-language report — same URL now set as the repo's GitHub
+  homepage link.
+
 ## [0.1.2] - 2026-09-24
 
 ### Added
