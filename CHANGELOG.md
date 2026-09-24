@@ -8,6 +8,14 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-24
+
+### Added
+
+- A live release badge in `docs/report.html`'s header (matching
+  README's), so the plain-language report also shows the current
+  release version.
+
 ## [0.1.1] - 2026-09-24
 
 ### Added
