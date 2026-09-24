@@ -5,6 +5,7 @@
 [![codecov](https://codecov.io/gh/Mendenator/omnirate/branch/master/graph/badge.svg)](https://codecov.io/gh/Mendenator/omnirate)
 [![License](https://img.shields.io/github/license/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/blob/master/LICENSE)
 [![Open Issues](https://img.shields.io/github/issues/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/issues)
+[![Open PRs](https://img.shields.io/github/issues-pr/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/pulls)
 
 Polymorphic Rating & Proof-of-Experience Engine — монорепо.
 
