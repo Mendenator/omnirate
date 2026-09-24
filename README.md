@@ -6,6 +6,8 @@
 [![License](https://img.shields.io/github/license/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/blob/master/LICENSE)
 [![Open Issues](https://img.shields.io/github/issues/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/issues)
 [![Open PRs](https://img.shields.io/badge/Open%20PRs-0-brightgreen)](https://github.com/Mendenator/omnirate/pulls)
+[![Stars](https://img.shields.io/github/stars/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/commits/master)
 
 Polymorphic Rating & Proof-of-Experience Engine — монорепо.
 
