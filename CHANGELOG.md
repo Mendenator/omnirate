@@ -8,6 +8,32 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-09-25
+
+### Fixed
+
+- `POST /api/v1/reviews` only ever enqueued a `moderate_review` job — a new
+  review never triggered `reindex_entity`, so OpenSearch (and the
+  entity-page score) only picked up a new review after someone manually
+  reindexed. `create_review` now enqueues `reindex_entity` too.
+- `app/workers/indexer.reindex_entity` and
+  `app/domain/scoring_service.materialize_entity_score` both computed an
+  entity's score from *every* review, including ones blocked by
+  moderation for defamation (`Review.is_blocked`). Both now exclude
+  blocked reviews, matching `GET /api/v1/entities/{id}`'s existing filter.
+
+### Changed
+
+- (Internal, discovered while fixing the above) `reindex_entity`'s new
+  enqueue call deliberately omits a custom `_queue_name` — the indexer
+  worker's `WorkerSettings` never declares one, so it polls arq's default
+  queue. `moderate_review`'s existing enqueue call still targets
+  `"arq:queue:moderation"`, which no running worker actually listens on;
+  that's a separate, pre-existing bug (moderation jobs are silently never
+  processed) left as-is here since fixing it means deciding whether a
+  moderation worker process should be deployed at all, not just a code
+  change.
+
 ## [0.2.2] - 2026-09-25
 
 ### Changed

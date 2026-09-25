@@ -16,7 +16,11 @@ def _redis_key(entity_id: str) -> str:
 async def materialize_entity_score(
     db: AsyncSession, redis: Redis, *, entity_id: str, category_prior_mean: float
 ) -> float:
-    reviews = (await db.execute(select(Review).where(Review.entity_id == entity_id))).scalars().all()
+    reviews = (
+        (await db.execute(select(Review).where(Review.entity_id == entity_id, Review.is_blocked.is_(False))))
+        .scalars()
+        .all()
+    )
     scored = [
         ScoredReview(overall_score=float(r.overall_score), poe_level=r.poe_level, fraud_score=float(r.fraud_score))
         for r in reviews

@@ -44,6 +44,33 @@ async def test_reindex_upserts_document_for_existing_entity(db_session, worker_d
     assert kwargs["body"]["n_verified"] == 1
 
 
+async def test_reindex_excludes_blocked_reviews_from_score_and_count(db_session, worker_db):
+    entity = Entity(branch_slug="hool-zoog", category_slug="restoran", schema_version=1, name="Хаан буудал")
+    db_session.add(entity)
+    await db_session.flush()
+    user = User(rd_hash=f"rd-{uuid.uuid4()}", display_name="Reviewer", poe_level="L4")
+    db_session.add(user)
+    await db_session.flush()
+    db_session.add(
+        Review(
+            entity_id=entity.id,
+            user_id=user.id,
+            poe_level="L4",
+            overall_score=1.0,
+            fraud_score=0.0,
+            is_blocked=True,
+        )
+    )
+    await db_session.commit()
+
+    opensearch = AsyncMock()
+    await reindex_entity({"opensearch": opensearch}, str(entity.id))
+
+    _, kwargs = opensearch.index.call_args
+    assert kwargs["body"]["n_verified"] == 0
+    assert kwargs["body"]["score"] == 3.5  # falls back to the prior — the blocked review is excluded entirely
+
+
 async def test_reindex_handles_entity_with_no_location(db_session, worker_db):
     entity = Entity(branch_slug="hool-zoog", category_slug="restoran", schema_version=1, name="No Location")
     db_session.add(entity)

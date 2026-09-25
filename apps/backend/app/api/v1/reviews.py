@@ -58,5 +58,11 @@ async def create_review(
     arq_pool = getattr(request.app.state, "arq_pool", None)
     if arq_pool is not None:
         await arq_pool.enqueue_job("moderate_review", str(review.id), _queue_name="arq:queue:moderation")
+        # No custom _queue_name here, unlike moderate_review above: the
+        # indexer worker's WorkerSettings never sets one, so it polls arq's
+        # default queue — giving reindex_entity a made-up queue name (the
+        # way moderate_review's "arq:queue:moderation" doesn't match any
+        # running worker either) would just leave the job stuck, unread.
+        await arq_pool.enqueue_job("reindex_entity", str(review.entity_id))
 
     return review

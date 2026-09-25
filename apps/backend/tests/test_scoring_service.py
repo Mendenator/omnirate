@@ -48,3 +48,23 @@ async def test_no_reviews_falls_back_toward_prior(db_session):
     score = await materialize_entity_score(db_session, redis, entity_id=str(entity.id), category_prior_mean=3.5)
 
     assert score == 3.5
+
+
+async def test_blocked_reviews_are_excluded_from_the_score(db_session):
+    entity = Entity(branch_slug="hool-zoog", category_slug="restoran", schema_version=1, name="Test Entity")
+    db_session.add(entity)
+    await db_session.flush()
+    user = User(rd_hash=f"rd-{uuid.uuid4()}", display_name="Blocked reviewer", poe_level="L4")
+    db_session.add(user)
+    await db_session.flush()
+    db_session.add(
+        Review(
+            entity_id=entity.id, user_id=user.id, poe_level="L4", overall_score=0.5, fraud_score=0.0, is_blocked=True
+        )
+    )
+    await db_session.commit()
+    redis = fakeredis.FakeAsyncRedis()
+
+    score = await materialize_entity_score(db_session, redis, entity_id=str(entity.id), category_prior_mean=3.5)
+
+    assert score == 3.5  # blocked review excluded entirely -> falls back to the prior, unaffected by its 0.5

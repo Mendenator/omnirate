@@ -37,7 +37,11 @@ async def reindex_entity(ctx: dict[str, Any], entity_id: str) -> None:
             await ctx["opensearch"].delete(index=ENTITIES_ALIAS, id=entity_id, ignore=[404])
             return
 
-        reviews = (await db.execute(select(Review).where(Review.entity_id == entity.id))).scalars().all()
+        reviews = (
+            (await db.execute(select(Review).where(Review.entity_id == entity.id, Review.is_blocked.is_(False))))
+            .scalars()
+            .all()
+        )
         n_verified = sum(1 for r in reviews if counts_as_verified(r.poe_level))
         score = compute_bayesian_trimmed_score(
             [
