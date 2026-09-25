@@ -1,4 +1,5 @@
 import uuid
+from urllib.parse import urlsplit, urlunsplit
 
 import fakeredis
 import pytest_asyncio
@@ -15,10 +16,40 @@ from app.domain.models import User
 from app.main import app
 
 
+def _test_database_url(database_url: str) -> str:
+    """Every test in this file drops and recreates the whole schema on a
+    real Postgres — pointing that at settings.database_url directly would
+    wipe whatever a developer has running locally (docker-compose's
+    long-lived `omnirate` database, shared with a manually-poked-at dev
+    backend) every single test run. Suffix the database name with `_test`
+    so the two are never the same database, in CI or locally."""
+    parts = urlsplit(database_url)
+    db_name = parts.path.lstrip("/")
+    if not db_name.endswith("_test"):
+        db_name = f"{db_name}_test"
+    return urlunsplit(parts._replace(path=f"/{db_name}"))
+
+
+async def _ensure_database_exists(test_db_url: str) -> None:
+    parts = urlsplit(test_db_url)
+    db_name = parts.path.lstrip("/")
+    maintenance_url = urlunsplit(parts._replace(path="/postgres"))
+    maintenance_engine = create_async_engine(maintenance_url, isolation_level="AUTOCOMMIT")
+    try:
+        async with maintenance_engine.connect() as conn:
+            exists = await conn.scalar(text("SELECT 1 FROM pg_database WHERE datname = :name"), {"name": db_name})
+            if not exists:
+                await conn.execute(text(f'CREATE DATABASE "{db_name}"'))
+    finally:
+        await maintenance_engine.dispose()
+
+
 @pytest_asyncio.fixture
 async def engine():
     settings = get_settings()
-    eng = create_async_engine(settings.database_url)
+    test_db_url = _test_database_url(settings.database_url)
+    await _ensure_database_exists(test_db_url)
+    eng = create_async_engine(test_db_url)
     async with eng.begin() as conn:
         # Unit tests exercise ORM constraints (unique/check), not the
         # pg_jsonschema trigger from the migration — that needs the
