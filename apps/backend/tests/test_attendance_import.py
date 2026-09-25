@@ -38,13 +38,10 @@ async def test_import_matches_records_to_entities_by_external_id(db_session):
     assert float(row.attendance_pct) == 87.5
 
 
-async def test_import_counts_unmatched_records():
+async def test_import_counts_unmatched_records(db_session):
     records = [AttendanceRecord(politician_external_id="unknown-id", period="2026-Q3", attendance_pct=50.0)]
-    from app.db.session import async_session_factory
-
-    async with async_session_factory() as db:
-        with patch("app.domain.attendance_import.fetch_attendance_records", return_value=records):
-            result = await import_attendance(db, source_url="http://example.test")
+    with patch("app.domain.attendance_import.fetch_attendance_records", return_value=records):
+        result = await import_attendance(db_session, source_url="http://example.test")
 
     assert result["unmatched"] == 1
     assert result["matched"] == 0
