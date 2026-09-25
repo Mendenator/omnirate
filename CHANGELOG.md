@@ -8,6 +8,15 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-25
+
+### Changed
+
+- README's Open PRs badge switched from a hand-maintained static value to
+  shields.io's `github/issues-pr` endpoint, matching the Open Issues
+  badge next to it — it now reflects the real open PR count
+  automatically instead of needing a manual edit.
+
 ## [0.2.1] - 2026-09-25
 
 ### Fixed
