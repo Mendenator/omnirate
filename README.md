@@ -6,7 +6,7 @@
 | **Build** | [![CI](https://github.com/Mendenator/omnirate/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Mendenator/omnirate/actions/workflows/ci.yml) | [![codecov](https://codecov.io/gh/Mendenator/omnirate/branch/master/graph/badge.svg)](https://codecov.io/gh/Mendenator/omnirate) |
 | **Release** | [![Release](https://img.shields.io/github/v/release/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/releases/latest) | [![Last commit](https://img.shields.io/github/last-commit/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/commits/master) |
 | **License** | [![License](https://img.shields.io/github/license/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/blob/master/LICENSE) | [![Website](https://img.shields.io/badge/website-report-24615F)](https://claude.ai/artifact/Ej7rN32MerYjb6LBZ46krC) |
-| **Activity** | [![Open Issues](https://img.shields.io/github/issues/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/issues) | [![Open PRs](https://img.shields.io/badge/Open%20PRs-0-brightgreen)](https://github.com/Mendenator/omnirate/pulls) |
+| **Activity** | [![Open Issues](https://img.shields.io/github/issues/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/issues) | [![Open PRs](https://img.shields.io/github/issues-pr/Mendenator/omnirate)](https://github.com/Mendenator/omnirate/pulls) |
 
 Polymorphic Rating & Proof-of-Experience Engine — монорепо.
 
