@@ -8,6 +8,24 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-25
+
+### Fixed
+
+- `apps/backend/tests/conftest.py`'s `engine` fixture pointed straight at
+  `settings.database_url` and dropped/recreated the whole schema on every
+  test run — harmless against CI's short-lived service container, but
+  locally that URL defaults to the same docker-compose Postgres instance
+  a dev backend and any manually-created demo data live in, so every
+  local `pytest` run silently wiped it. Tests now run against a derived,
+  dedicated `<db>_test` database instead, auto-created on first use.
+- Fixing the above exposed a second, previously-hidden bug: `test_import_
+  counts_unmatched_records` bypassed the test fixtures and used the app's
+  global session factory (pointed at the real database) directly instead
+  of the injected `db_session`, and only ever passed because the first
+  bug happened to leave that schema lying around. Now uses `db_session`
+  like its neighboring tests.
+
 ## [0.2.0] - 2026-09-25
 
 ### Added
