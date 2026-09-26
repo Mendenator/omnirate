@@ -2,6 +2,7 @@ import uuid
 from unittest.mock import AsyncMock
 
 from app.main import app
+from app.workers.moderation import MODERATION_QUEUE_NAME
 
 RESTORAN_SCHEMA = {"type": "object", "properties": {}}
 
@@ -106,6 +107,7 @@ async def test_creating_a_review_enqueues_moderation_and_reindex_jobs(client):
 
     calls = {call.args[0]: call for call in arq_pool.enqueue_job.await_args_list}
     assert calls["moderate_review"].args[1] == review_id
+    assert calls["moderate_review"].kwargs["_queue_name"] == MODERATION_QUEUE_NAME
     assert calls["reindex_entity"].args[1] == entity["id"]
     # reindex_entity deliberately has no _queue_name override — the indexer
     # worker's WorkerSettings never sets one, so it polls arq's default

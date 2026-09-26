@@ -9,6 +9,7 @@ from app.api.v1.schemas import ReviewCreateRequest, ReviewResponse
 from app.core.deps import CurrentUser, get_current_user
 from app.db.session import get_db
 from app.domain.models import Review
+from app.workers.moderation import MODERATION_QUEUE_NAME
 
 router = APIRouter(prefix="/api/v1/reviews", tags=["reviews"])
 
@@ -57,12 +58,9 @@ async def create_review(
 
     arq_pool = getattr(request.app.state, "arq_pool", None)
     if arq_pool is not None:
-        await arq_pool.enqueue_job("moderate_review", str(review.id), _queue_name="arq:queue:moderation")
-        # No custom _queue_name here, unlike moderate_review above: the
-        # indexer worker's WorkerSettings never sets one, so it polls arq's
-        # default queue — giving reindex_entity a made-up queue name (the
-        # way moderate_review's "arq:queue:moderation" doesn't match any
-        # running worker either) would just leave the job stuck, unread.
+        await arq_pool.enqueue_job("moderate_review", str(review.id), _queue_name=MODERATION_QUEUE_NAME)
+        # No custom _queue_name here: the indexer worker's WorkerSettings
+        # doesn't set one, so it polls arq's default queue.
         await arq_pool.enqueue_job("reindex_entity", str(review.entity_id))
 
     return review

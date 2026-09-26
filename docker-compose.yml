@@ -82,5 +82,16 @@ services:
       redis: { condition: service_started }
       opensearch: { condition: service_healthy }
 
+  worker-moderation:
+    build: ./apps/backend
+    command: ["arq", "app.workers.moderation.WorkerSettings"]
+    env_file: .env
+    environment:
+      OMNIRATE_DATABASE_URL: postgresql+asyncpg://omnirate:omnirate@postgres:5432/omnirate
+      OMNIRATE_REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
 volumes:
   pgdata:

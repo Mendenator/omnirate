@@ -1,7 +1,14 @@
 import uuid
 
 from app.domain.models import Entity, Review, User
-from app.workers.moderation import STRICT_DEFAMATION_BRANCH, moderate_review, on_job_failed_permanently
+from app.workers.indexer import WorkerSettings as IndexerWorkerSettings
+from app.workers.moderation import (
+    MODERATION_QUEUE_NAME,
+    STRICT_DEFAMATION_BRANCH,
+    WorkerSettings,
+    moderate_review,
+    on_job_failed_permanently,
+)
 
 
 async def _seed_review(db_session, *, branch_slug="hool-zoog", body="Маш сайн үйлчилгээ байсан"):
@@ -81,3 +88,12 @@ async def test_on_job_failed_permanently_pushes_to_dlq():
 
     dlq_len = await redis.llen("moderation:dlq")
     assert dlq_len == 1
+
+
+def test_moderation_worker_polls_the_queue_reviews_enqueue_to():
+    assert WorkerSettings.queue_name == MODERATION_QUEUE_NAME
+
+
+def test_moderation_and_indexer_workers_do_not_share_a_queue():
+    # Sharing one queue would let a worker grab jobs for functions it never registered.
+    assert getattr(IndexerWorkerSettings, "queue_name", "arq:queue") != WorkerSettings.queue_name

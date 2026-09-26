@@ -20,7 +20,11 @@ from app.domain.models import Entity, Review
 from app.domain.moderation import PiiFinding, redact_pii
 
 DLQ_KEY = "moderation:dlq"
-MODERATION_QUEUE_NAME = "moderation"
+# Its own queue (not arq's default "arq:queue", which the indexer worker polls):
+# two workers with different `functions` sharing one queue would each grab jobs
+# they can't run. Used by both the enqueue site (api/v1/reviews.py) and this
+# worker's WorkerSettings so the two can't drift apart.
+MODERATION_QUEUE_NAME = "arq:queue:moderation"
 
 # strict_defamation (P3-04) applies only to political-branch entities — the
 # heightened bar for unsourced criminal allegations isn't appropriate for a
@@ -85,6 +89,7 @@ async def startup(ctx: dict[str, Any]) -> None:
 
 class WorkerSettings:
     functions = [moderate_review]
+    queue_name = MODERATION_QUEUE_NAME
     on_startup = startup
     # Must be a plain RedisSettings instance, not a method — see
     # app/workers/indexer.py's WorkerSettings for why.

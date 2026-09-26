@@ -8,6 +8,19 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- Review moderation never ran: `POST /api/v1/reviews` enqueued
+  `moderate_review` onto `"arq:queue:moderation"`, but the moderation
+  worker's `WorkerSettings` never set a matching `queue_name` (arq's
+  default is `"arq:queue"`), and `docker-compose.yml` had no container
+  running it at all. The moderation worker now polls
+  `MODERATION_QUEUE_NAME` (a single constant shared with the enqueue
+  site) and runs as its own `worker-moderation` compose service. It keeps
+  its own queue rather than sharing the default one with the indexer
+  worker, since two workers with different registered functions on one
+  queue would each grab jobs they can't run.
+
 ## [0.2.3] - 2026-09-25
 
 ### Fixed
