@@ -1,6 +1,6 @@
 [project]
 name = "omnirate-backend"
-version = "0.2.4"
+version = "0.3.0"
 description = "OmniRate domain API — entities, reviews, PoE, schema registry, search"
 requires-python = ">=3.12"
 dependencies = [
