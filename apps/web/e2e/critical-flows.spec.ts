@@ -30,3 +30,33 @@ test("entity page renders sections in the uniform order", async ({ page }) => {
   await page.goto(`/entities/${entityId}`);
   await expect(page.locator("h1")).toBeVisible();
 });
+
+test("user can log in with phone + OTP and lands on the requested page", async ({ page }) => {
+  await page.goto("/login?next=/search");
+  await page.getByLabel("Утасны дугаар").fill("99112233");
+  await page.getByLabel("Баталгаажуулах код").fill("0000");
+  await page.getByRole("button", { name: "Нэвтрэх" }).click();
+
+  await page.waitForURL((url) => url.pathname === "/search");
+  const token = await page.evaluate(() => localStorage.getItem("omnirate_access_token"));
+  expect(token).toBeTruthy();
+});
+
+test("login ignores an off-site next= target", async ({ page }) => {
+  await page.goto("/login?next=//evil.example");
+  await page.getByLabel("Утасны дугаар").fill("99112234");
+  await page.getByLabel("Баталгаажуулах код").fill("0000");
+  await page.getByRole("button", { name: "Нэвтрэх" }).click();
+
+  await page.waitForURL((url) => url.pathname === "/");
+  expect(new URL(page.url()).hostname).not.toBe("evil.example");
+});
+
+test("logging out clears the stored token", async ({ page }) => {
+  await page.goto("/login");
+  await page.evaluate(() => localStorage.setItem("omnirate_access_token", "x"));
+  await page.reload();
+  await page.getByRole("button", { name: "Гарах" }).click();
+  const token = await page.evaluate(() => localStorage.getItem("omnirate_access_token"));
+  expect(token).toBeNull();
+});

@@ -8,6 +8,23 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Added
+
+- Web login page (`/login`): phone + OTP against `POST /api/v1/auth/otp/verify`,
+  stores the access token, redirects to a same-site `?next=` path (off-site
+  targets like `//evil.example` are ignored), and offers a logout button.
+  The review form now links to it on a 401 instead of a bare error, and
+  the home page links to it. Token handling moved into `apps/web/lib/auth.ts`.
+  Covered by three Playwright flows plus the WCAG scan.
+
+### Known limitations
+
+- The backend's OTP endpoint accepts any code and sends no SMS (a documented
+  skeleton in `app/api/v1/auth.py`), so this login is not real authentication
+  yet: anyone can sign in as any phone number. It must not be exposed
+  outside dev until a real OTP provider is wired in. Access tokens last 15
+  minutes and there is no refresh, so users must log in again after that.
+
 ## [0.2.4] - 2026-09-26
 
 ### Fixed

@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+
+import { getToken } from "../../../../lib/auth";
 
 // P1-11: review submission, target <=4 steps (score -> criteria -> text ->
 // optional e-barimt evidence). Idempotency-Key is client-generated once per
@@ -12,6 +15,7 @@ export default function ReviewForm({ entityId }: { entityId: string }) {
   const [overallScore, setOverallScore] = useState(5);
   const [body, setBody] = useState("");
   const [status, setStatus] = useState<string | null>(null);
+  const [needsLogin, setNeedsLogin] = useState(false);
 
   async function submit() {
     setStatus("Илгээж байна...");
@@ -20,7 +24,7 @@ export default function ReviewForm({ entityId }: { entityId: string }) {
       headers: {
         "Content-Type": "application/json",
         "Idempotency-Key": IDEMPOTENCY_KEY,
-        Authorization: `Bearer ${localStorage.getItem("omnirate_access_token") ?? ""}`,
+        Authorization: `Bearer ${getToken() ?? ""}`,
       },
       body: JSON.stringify({ entity_id: entityId, overall_score: overallScore, body }),
     });
@@ -30,6 +34,7 @@ export default function ReviewForm({ entityId }: { entityId: string }) {
         : `❌ Алдаа (${res.status})`,
     );
     if (res.ok) setStep(4);
+    setNeedsLogin(res.status === 401);
   }
 
   return (
@@ -74,6 +79,13 @@ export default function ReviewForm({ entityId }: { entityId: string }) {
       )}
       {step === 4 && <p>4. e-barimt QR баримт хавсаргах (P1-01 evidence endpoint) — удахгүй.</p>}
       {status && <p>{status}</p>}
+      {needsLogin && (
+        <p>
+          <Link href={`/login?next=${encodeURIComponent(`/entities/${entityId}/review`)}`}>
+            Үнэлгээ бичихийн тулд нэвтэрнэ үү
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

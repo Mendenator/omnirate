@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
 // landmark structure) on every CI run — it does NOT replace the human
 // usability testing S-20 also calls for (screen-reader walkthroughs, real
 // assistive-tech users), which is out of scope for automation.
-const PAGES_TO_AUDIT = ["/", "/search", "/admin/schemas", "/tur-alba"];
+const PAGES_TO_AUDIT = ["/", "/search", "/admin/schemas", "/tur-alba", "/login"];
 
 for (const path of PAGES_TO_AUDIT) {
   test(`WCAG 2.2 AA: ${path} has no critical/serious violations`, async ({ page }) => {
