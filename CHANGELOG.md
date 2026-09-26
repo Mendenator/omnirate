@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-09-26
+
 ### Changed
 
 - CI runners are pinned to `ubuntu-24.04` instead of `ubuntu-latest`, which
