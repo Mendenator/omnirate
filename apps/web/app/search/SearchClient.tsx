@@ -20,21 +20,43 @@ interface SearchResponse {
 // S-09: results page with facet panel + list. Debounced query -> autocomplete
 // (K8 <=80ms) is a separate endpoint from the full search (K9 <=150ms) so the
 // two latency budgets stay independently measurable.
-export default function SearchClient() {
-  const [q, setQ] = useState("");
+export default function SearchClient({
+  initialQuery,
+  initialCategory,
+}: {
+  initialQuery: string;
+  initialCategory: string | null;
+}) {
+  const [q, setQ] = useState(initialQuery);
   const [data, setData] = useState<SearchResponse | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>(initialCategory);
 
   useEffect(() => {
+    // Aborting on cleanup means a slow response to an old query can't land
+    // after (and overwrite) the results for what's typed now.
+    const controller = new AbortController();
     const handle = setTimeout(() => {
       const params = new URLSearchParams();
       if (q) params.set("q", q);
       if (activeCategory) params.set("category_slug", activeCategory);
-      fetch(`/api/backend/v1/search?${params}`)
+
+      // Keep the address bar shareable without a navigation/re-render.
+      const shown = new URLSearchParams();
+      if (q) shown.set("q", q);
+      if (activeCategory) shown.set("category", activeCategory);
+      window.history.replaceState(null, "", shown.size ? `?${shown}` : window.location.pathname);
+
+      fetch(`/api/backend/v1/search?${params}`, { signal: controller.signal })
         .then((r) => (r.ok ? r.json() : null))
-        .then(setData);
+        .then(setData)
+        .catch((err: unknown) => {
+          if (!(err instanceof DOMException && err.name === "AbortError")) throw err;
+        });
     }, 200);
-    return () => clearTimeout(handle);
+    return () => {
+      clearTimeout(handle);
+      controller.abort();
+    };
   }, [q, activeCategory]);
 
   return (

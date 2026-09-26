@@ -60,3 +60,14 @@ test("logging out clears the stored token", async ({ page }) => {
   const token = await page.evaluate(() => localStorage.getItem("omnirate_access_token"));
   expect(token).toBeNull();
 });
+
+test("search reads ?q= from the URL instead of ignoring it", async ({ page }) => {
+  await page.goto("/search?q=Khaan");
+  await expect(page.getByPlaceholder("Хайх...")).toHaveValue("Khaan");
+});
+
+test("typing a search updates the URL so it can be shared", async ({ page }) => {
+  await page.goto("/search");
+  await page.getByPlaceholder("Хайх...").fill("Nomads");
+  await page.waitForURL((url) => url.searchParams.get("q") === "Nomads");
+});

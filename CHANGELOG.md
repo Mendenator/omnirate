@@ -8,6 +8,15 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- The web search page ignored `?q=` in the URL: the box always started
+  empty, so `/search?q=Khaan` listed every entity even though the backend
+  search itself was filtering correctly, and search links couldn't be
+  shared. The page now reads `q` and `category` from the URL, keeps them
+  updated as you type, and cancels in-flight requests so a slow old
+  response can't overwrite newer results.
+
 ## [0.3.0] - 2026-09-26
 
 ### Added
