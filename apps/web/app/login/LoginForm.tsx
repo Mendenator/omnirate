@@ -7,7 +7,7 @@ import { clearToken, getToken, setToken, subscribeToken } from "../../lib/auth";
 
 // L1 login (SOW §7 fallback): phone + OTP against POST /api/v1/auth/otp/verify.
 // The backend does not send or verify SMS codes yet (see app/api/v1/auth.py),
-// so this page is only as trustworthy as that endpoint.
+// so it only serves this outside env=dev as a 404 — shown below as "unavailable".
 export default function LoginForm({ next }: { next: string }) {
   const router = useRouter();
   const [phone, setPhone] = useState("");
@@ -30,6 +30,10 @@ export default function LoginForm({ next }: { next: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: phone.trim(), otp_code: otp.trim() }),
       });
+      if (res.status === 404) {
+        setStatus("❌ Утасны дугаараар нэвтрэх үйлчилгээ энэ орчинд идэвхгүй байна");
+        return;
+      }
       if (!res.ok) {
         setStatus(`❌ Нэвтэрч чадсангүй (${res.status})`);
         return;

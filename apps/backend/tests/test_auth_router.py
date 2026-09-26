@@ -1,5 +1,12 @@
 from unittest.mock import AsyncMock, patch
 
+import pytest
+from sqlalchemy import func, select
+
+from app.core.config import Settings, get_settings
+from app.domain.models import User
+from app.main import app
+
 REDIRECT_URI = "https://app.omnirate.mn/callback"
 
 
@@ -73,3 +80,29 @@ async def test_otp_verify_reuses_existing_user_for_same_phone(client):
     second = await client.post("/api/v1/auth/otp/verify", json={"phone": "88112233", "otp_code": "222222"})
     assert first.status_code == 200
     assert second.status_code == 200
+
+
+def _settings_for(env: str) -> Settings:
+    # Non-dev envs refuse the placeholder secrets (see Settings), so give real-looking ones.
+    return Settings(env=env, jwt_secret="j" * 40, rd_hmac_secret="r" * 40)
+
+
+@pytest.mark.parametrize("env", ["stage", "production"])
+async def test_otp_verify_is_refused_outside_dev_and_creates_no_user(client, db_session, env):
+    app.dependency_overrides[get_settings] = lambda: _settings_for(env)
+
+    resp = await client.post("/api/v1/auth/otp/verify", json={"phone": "99001122", "otp_code": "anything"})
+
+    assert resp.status_code == 404
+    assert "access_token" not in resp.text
+    users = await db_session.scalar(select(func.count()).select_from(User).where(User.display_name == "99001122"))
+    assert users == 0
+
+
+async def test_otp_verify_still_works_in_dev(client):
+    app.dependency_overrides[get_settings] = lambda: _settings_for("dev")
+
+    resp = await client.post("/api/v1/auth/otp/verify", json={"phone": "99001122", "otp_code": "123456"})
+
+    assert resp.status_code == 200
+    assert resp.json()["poe_level"] == "L1"

@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import dan_auth
+from app.core.config import Settings, get_settings
 from app.core.security import hash_rd, issue_access_token
 from app.db.session import get_db
 from app.domain.models import User
@@ -84,12 +85,21 @@ async def dan_callback(req: DanCallbackRequest, db: AsyncSession = Depends(get_d
 
 
 @router.post("/otp/verify", response_model=TokenResponse)
-async def otp_verify(req: OtpLoginRequest, db: AsyncSession = Depends(get_db)) -> TokenResponse:
+async def otp_verify(
+    req: OtpLoginRequest,
+    db: AsyncSession = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> TokenResponse:
     """L1 fallback per SOW §7 risk mitigation: if the ДАН agreement slips, the
     pilot can launch on phone+OTP only, with a lower PoE ceiling (L1)."""
-    # NOTE: OTP send/verify against an SMS gateway is out of scope for this
-    # skeleton — this endpoint assumes an upstream OTP provider already
-    # validated req.otp_code and is here to demonstrate the L1 token path.
+    # There is no SMS gateway behind this yet: req.otp_code is never checked,
+    # so anyone can mint a token for any phone number. That is fine for local
+    # dev and demos and nowhere else, so it doesn't exist outside env=dev
+    # (the same switch that already gates the placeholder secrets). Drop this
+    # check only together with adding a real OTP provider that validates the code.
+    if settings.env != "dev":
+        raise HTTPException(status_code=404, detail="OTP login is only available in the dev environment")
+
     pseudo_rd_hash = hash_rd(f"otp:{req.phone}")
     user = await db.scalar(select(User).where(User.rd_hash == pseudo_rd_hash))
     if user is None:

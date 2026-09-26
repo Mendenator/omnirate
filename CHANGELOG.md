@@ -8,6 +8,16 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Security
+
+- `POST /api/v1/auth/otp/verify` now returns 404 unless `OMNIRATE_ENV=dev`.
+  It never checked the OTP code (no SMS gateway exists yet), so anywhere
+  else it let anyone mint a token for any phone number. It uses the same
+  `env == "dev"` switch that already gates the placeholder secrets. Both
+  the web login page and the mobile app call it, so phone+OTP login is
+  unavailable outside dev until a real OTP provider validates the code;
+  the web page now says so instead of a generic failure.
+
 ## [0.4.1] - 2026-09-26
 
 ### Changed
