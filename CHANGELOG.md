@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-09-26
+
 ### Fixed
 
 - Review moderation never ran: `POST /api/v1/reviews` enqueued
