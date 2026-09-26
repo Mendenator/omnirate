@@ -33,6 +33,13 @@ export default async function CategoryPage({
       </nav>
 
       <h1>{category}</h1>
+      <p>
+        <Link
+          href={`/entities/new?category=${encodeURIComponent(category)}&branch=${encodeURIComponent(branch)}`}
+        >
+          + Шинэ газар нэмэх
+        </Link>
+      </p>
 
       {schema?.search_config.facets && (
         <aside>

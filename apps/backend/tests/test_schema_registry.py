@@ -69,3 +69,32 @@ async def test_get_latest_returns_highest_version(client):
 async def test_get_latest_unknown_category_is_404(client):
     resp = await client.get("/api/v1/schemas/unknown-category/latest")
     assert resp.status_code == 404
+
+
+async def test_list_categories_returns_each_slug_once_at_its_latest_version(client):
+    await _publish(client, version=1)
+    await _publish(client, version=2)
+    other = await client.post(
+        "/api/v1/schemas",
+        json={
+            "category_slug": "emnelg",
+            "version": 1,
+            "json_schema": {"type": "object"},
+            "display_config": {"sections": []},
+        },
+    )
+    assert other.status_code == 201
+
+    resp = await client.get("/api/v1/schemas")
+
+    assert resp.status_code == 200
+    assert resp.json() == [
+        {"category_slug": "emnelg", "version": 1},
+        {"category_slug": "restoran", "version": 2},
+    ]
+
+
+async def test_list_categories_is_empty_when_nothing_is_published(client):
+    resp = await client.get("/api/v1/schemas")
+    assert resp.status_code == 200
+    assert resp.json() == []

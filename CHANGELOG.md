@@ -8,6 +8,29 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Added
+
+- Web create-entity page (`/entities/new`): pick a category, then fill in
+  the entity's fields plus the category's own attributes, rendered and
+  validated from its published JSON Schema (no code per category). It
+  redirects to the new entity's page, and is linked from the home page and
+  from each category listing (which prefills category and branch). Replaces
+  the unused `EntityAttributesForm.tsx` scaffold.
+- `GET /api/v1/schemas` lists every published category with its latest
+  version (needed for the category picker).
+
+### Fixed
+
+- `POST /api/v1/entities` never enqueued a reindex, so a new entity didn't
+  appear in search or category listings until someone reviewed it. It now
+  enqueues `reindex_entity`, as review creation already does.
+
+### Known limitations
+
+- `POST /api/v1/entities` requires no authentication, so the new page (like
+  `/admin/schemas`) lets anyone create entities. It should be gated before
+  a public deploy.
+
 ## [0.3.1] - 2026-09-26
 
 ### Fixed

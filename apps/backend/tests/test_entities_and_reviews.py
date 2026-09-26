@@ -1,6 +1,8 @@
 import uuid
+from unittest.mock import AsyncMock
 
 from app.domain.models import Review, User
+from app.main import app
 
 RESTORAN_SCHEMA = {"type": "object", "properties": {"cuisine": {"type": "string"}}}
 
@@ -176,3 +178,15 @@ async def test_list_reviews_excludes_blocked_and_orders_newest_first(client, db_
 async def test_list_reviews_for_missing_entity_is_404(client):
     resp = await client.get(f"/api/v1/entities/{uuid.uuid4()}/reviews")
     assert resp.status_code == 404
+
+
+async def test_creating_an_entity_enqueues_a_reindex_job(client):
+    await _publish_schema(client)
+    arq_pool = AsyncMock()
+    app.state.arq_pool = arq_pool
+    try:
+        entity = await _create_entity(client)
+    finally:
+        del app.state.arq_pool
+
+    arq_pool.enqueue_job.assert_awaited_once_with("reindex_entity", entity["id"])

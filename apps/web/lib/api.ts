@@ -43,6 +43,11 @@ export interface ReviewListItem {
   created_at: string;
 }
 
+export interface CategorySummary {
+  category_slug: string;
+  version: number;
+}
+
 export interface CategorySchema {
   category_slug: string;
   version: number;

@@ -71,3 +71,58 @@ test("typing a search updates the URL so it can be shared", async ({ page }) => 
   await page.getByPlaceholder("Хайх...").fill("Nomads");
   await page.waitForURL((url) => url.searchParams.get("q") === "Nomads");
 });
+
+test("a user can add an entity from a category's own schema and land on its page", async ({
+  page,
+  request,
+}) => {
+  const slug = `e2e-entity-category-${Date.now()}`;
+  const published = await request.post("/api/backend/v1/schemas", {
+    data: {
+      category_slug: slug,
+      version: 1,
+      json_schema: { type: "object", properties: { cuisine: { type: "string", title: "Хоол" } } },
+      display_config: { sections: ["summary", "attributes"] },
+    },
+  });
+  expect(published.ok()).toBeTruthy();
+
+  await page.goto("/entities/new");
+  await page.getByLabel("Категори").selectOption(slug);
+  await page.getByLabel(/^Нэр/).fill("E2E Ресторан");
+  await page.getByLabel(/^Салбар/).fill("ulaanbaatar");
+  await page.getByLabel(/^Хоол/).fill("Монгол");
+  await page.getByRole("button", { name: "Нэмэх" }).click();
+
+  await page.waitForURL((url) => /^\/entities\/[0-9a-f-]{36}$/.test(url.pathname));
+  await expect(page.locator("h1")).toContainText("E2E Ресторан");
+});
+
+test("the new-entity form refuses to submit without the required fields", async ({
+  page,
+  request,
+}) => {
+  const slug = `e2e-entity-required-${Date.now()}`;
+  const published = await request.post("/api/backend/v1/schemas", {
+    data: {
+      category_slug: slug,
+      version: 1,
+      json_schema: { type: "object" },
+      display_config: { sections: [] },
+    },
+  });
+  expect(published.ok()).toBeTruthy();
+
+  const creations: string[] = [];
+  page.on("request", (r) => {
+    if (r.method() === "POST" && r.url().includes("/v1/entities")) creations.push(r.url());
+  });
+
+  await page.goto("/entities/new");
+  await page.getByLabel("Категори").selectOption(slug);
+  await page.getByRole("button", { name: "Нэмэх" }).click();
+
+  const name = page.getByLabel(/^Нэр/);
+  expect(await name.evaluate((el: HTMLInputElement) => el.validity.valueMissing)).toBe(true);
+  expect(creations).toEqual([]);
+});

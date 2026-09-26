@@ -10,7 +10,7 @@ from typing import Any
 
 import jsonschema
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models import SchemaRegistryEntry
@@ -86,6 +86,16 @@ async def publish_category_schema(db: AsyncSession, req: CategorySchemaPublishRe
     await db.commit()
     await db.refresh(entry)
     return entry
+
+
+async def list_categories(db: AsyncSession) -> list[tuple[str, int]]:
+    """Every published category with its highest version, alphabetical."""
+    rows = await db.execute(
+        select(SchemaRegistryEntry.category_slug, func.max(SchemaRegistryEntry.version))
+        .group_by(SchemaRegistryEntry.category_slug)
+        .order_by(SchemaRegistryEntry.category_slug)
+    )
+    return [(slug, version) for slug, version in rows.all()]
 
 
 async def get_latest_schema(db: AsyncSession, category_slug: str) -> SchemaRegistryEntry | None:

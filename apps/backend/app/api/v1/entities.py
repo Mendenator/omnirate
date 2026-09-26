@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +19,7 @@ CATEGORY_PRIOR_CONFIDENCE = 10.0
 
 
 @router.post("", response_model=EntityResponse, status_code=201)
-async def create_entity(req: EntityCreateRequest, db: AsyncSession = Depends(get_db)) -> Entity:
+async def create_entity(req: EntityCreateRequest, request: Request, db: AsyncSession = Depends(get_db)) -> Entity:
     entity = Entity(**req.model_dump())
     db.add(entity)
     try:
@@ -28,6 +28,13 @@ async def create_entity(req: EntityCreateRequest, db: AsyncSession = Depends(get
         await db.rollback()
         raise HTTPException(status_code=422, detail=f"entity rejected: {exc}") from exc
     await db.refresh(entity)
+
+    # Without this a new entity only reaches search/listings once someone
+    # reviews it (reviews.py is the other place that enqueues a reindex).
+    arq_pool = getattr(request.app.state, "arq_pool", None)
+    if arq_pool is not None:
+        await arq_pool.enqueue_job("reindex_entity", str(entity.id))
+
     return entity
 
 

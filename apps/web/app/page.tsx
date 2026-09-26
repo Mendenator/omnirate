@@ -9,7 +9,7 @@ export default function HomePage() {
         зөвхөн <Link href="/admin/schemas">/admin/schemas</Link> (P0-09/P0-10) ажиллаж байна.
       </p>
       <p>
-        <Link href="/login">Нэвтрэх</Link>
+        <Link href="/login">Нэвтрэх</Link> · <Link href="/entities/new">Шинэ газар нэмэх</Link>
       </p>
     </main>
   );

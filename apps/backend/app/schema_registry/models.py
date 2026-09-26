@@ -11,6 +11,11 @@ class CategorySchemaPublishRequest(BaseModel):
     display_config: dict[str, Any] = Field(default_factory=dict)
 
 
+class CategorySummary(BaseModel):
+    category_slug: str
+    version: int
+
+
 class CategorySchemaResponse(BaseModel):
     category_slug: str
     version: int
