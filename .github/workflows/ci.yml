@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   backend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     services:
       postgres:
@@ -77,7 +77,7 @@ jobs:
       # the build (fail_ci_if_error: false) since the badge is informational,
       # not a merge gate.
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: apps/backend/coverage.xml
@@ -87,7 +87,7 @@ jobs:
         run: docker build -t omnirate-backend:${{ github.sha }} .
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     defaults:
@@ -134,7 +134,7 @@ jobs:
   # skips (no OMNIRATE_E2E_ENTITY_ID) — there's no seed-data step here,
   # only what the "admin can define a new category" flow creates live.
   web-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     services:
       postgres:
@@ -232,7 +232,7 @@ jobs:
 
       - name: Upload logs and Playwright report on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web-e2e-debug
           path: |

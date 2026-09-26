@@ -8,6 +8,18 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Changed
+
+- CI runners are pinned to `ubuntu-24.04` instead of `ubuntu-latest`, which
+  GitHub moves to Ubuntu 26 on 2026-10-19, so the toolchain no longer changes
+  under the build without a commit.
+- `codecov/codecov-action` v5 → v7 (v5 pulled in `actions/github-script`
+  v7, which runs on the deprecated Node 20) and `actions/upload-artifact`
+  v4 → v7 (v4 also runs on Node 20). Every action the CI workflow uses now
+  runs on Node 24.
+- `deploy-stage.yml` is deliberately unchanged (it is dormant); it still says
+  `ubuntu-latest`, so pin it when that workflow is revived.
+
 ## [0.4.0] - 2026-09-26
 
 ### Added
