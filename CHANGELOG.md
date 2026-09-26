@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-26
+
 ### Fixed
 
 - The web search page ignored `?q=` in the URL: the box always started
