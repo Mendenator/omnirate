@@ -74,6 +74,9 @@ class Entity(Base):
     lon: Mapped[float | None] = mapped_column(Numeric(9, 6))
     attributes: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
     verified: Mapped[bool] = mapped_column(default=False)
+    # Who added it (NULL for entities that predate this column or were seeded).
+    # Deliberately not in any response model: user ids aren't public.
+    created_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     reviews: Mapped[list["Review"]] = relationship(back_populates="entity")

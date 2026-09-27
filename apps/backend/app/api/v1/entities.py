@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.schemas import EntityCreateRequest, EntityDetailResponse, EntityResponse, ReviewListItem
+from app.core.deps import CurrentUser, get_current_user
 from app.db.session import get_db
 from app.domain.models import Entity, Review
 from app.domain.poe import counts_as_verified
@@ -19,8 +20,13 @@ CATEGORY_PRIOR_CONFIDENCE = 10.0
 
 
 @router.post("", response_model=EntityResponse, status_code=201)
-async def create_entity(req: EntityCreateRequest, request: Request, db: AsyncSession = Depends(get_db)) -> Entity:
-    entity = Entity(**req.model_dump())
+async def create_entity(
+    req: EntityCreateRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    user: CurrentUser = Depends(get_current_user),
+) -> Entity:
+    entity = Entity(**req.model_dump(), created_by=user.user_id)
     db.add(entity)
     try:
         await db.commit()

@@ -8,6 +8,23 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Changed
+
+- `POST /api/v1/entities` now requires a login (bearer token) and records who
+  created the entity in a new `entities.created_by` column (migration
+  `0014_entity_created_by`; nullable, `ON DELETE SET NULL`, so existing
+  entities are unaffected). The id is not exposed in any API response. The
+  `/entities/new` page sends the stored token and, when there is none or it
+  has expired, shows a login link instead of a bare error.
+- A missing `Authorization` header is now a 401, not a 422 (the shared
+  `get_current_user` dependency, so review creation behaves the same way).
+
+### Known limitations
+
+- Outside `OMNIRATE_ENV=dev` phone+OTP login is off, so nobody can log in
+  there and therefore nobody can create entities until real login exists
+  (ДАН or an OTP provider). That is the intended locked-down default.
+
 ## [0.4.2] - 2026-09-27
 
 ### Security

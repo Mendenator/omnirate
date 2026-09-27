@@ -3,10 +3,12 @@
 import Form from "@rjsf/core";
 import type { RJSFSchema } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ChangeEvent } from "react";
 
 import type { CategorySchema, CategorySummary } from "../../../lib/api";
+import { getToken } from "../../../lib/auth";
 
 // P0-10: the whole form is one JSON Schema — the entity's own fields, plus the
 // category's published schema nested under `attributes` — so a new category
@@ -41,6 +43,7 @@ export default function NewEntityForm({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [needsLogin, setNeedsLogin] = useState(false);
   // Held here (not rebuilt inline) so unrelated re-renders can't reset what was typed.
   const [data, setData] = useState<Record<string, unknown>>({
     branch_slug: initialBranch || undefined,
@@ -73,10 +76,15 @@ export default function NewEntityForm({
     if (!category) return;
     setBusy(true);
     setStatus(null);
+    setNeedsLogin(false);
     try {
+      const token = getToken();
       const res = await fetch("/api/backend/v1/entities", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           ...formData,
           category_slug: category.category_slug,
@@ -84,6 +92,11 @@ export default function NewEntityForm({
           attributes: formData.attributes ?? {},
         }),
       });
+      if (res.status === 401) {
+        setNeedsLogin(true);
+        setStatus("❌ Газар нэмэхийн тулд нэвтэрсэн байх ёстой (эсвэл нэвтрэлт дууссан)");
+        return;
+      }
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         setStatus(`❌ Алдаа (${res.status}): ${body.detail ?? "тодорхойгүй"}`);
@@ -129,6 +142,15 @@ export default function NewEntityForm({
         </Form>
       )}
       {status && <p role="status">{status}</p>}
+      {needsLogin && category && (
+        <p>
+          <Link
+            href={`/login?next=${encodeURIComponent(`/entities/new?category=${category.category_slug}`)}`}
+          >
+            Нэвтрэх
+          </Link>
+        </p>
+      )}
     </>
   );
 }

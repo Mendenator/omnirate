@@ -44,3 +44,9 @@ async def test_missing_poe_level_claim_defaults_to_l0():
     current = await get_current_user(authorization=f"Bearer {token}")
 
     assert current.poe_level == "L0"
+
+
+async def test_missing_authorization_header_is_a_401_not_a_422():
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_user(authorization=None)
+    assert exc_info.value.status_code == 401

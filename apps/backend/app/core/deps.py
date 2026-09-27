@@ -12,8 +12,9 @@ class CurrentUser:
         self.poe_level = poe_level
 
 
-async def get_current_user(authorization: str = Header(...)) -> CurrentUser:
-    if not authorization.startswith("Bearer "):
+async def get_current_user(authorization: str | None = Header(default=None)) -> CurrentUser:
+    # Header(...) made a missing header a 422; no credentials at all is a 401.
+    if authorization is None or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="missing bearer token")
     token = authorization.removeprefix("Bearer ")
     try:

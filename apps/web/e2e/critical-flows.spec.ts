@@ -1,4 +1,18 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+
+// Same call the login page makes; the token is planted before the page's own
+// scripts run, so the page starts out logged in.
+async function loginViaApi(page: Page, request: APIRequestContext) {
+  const res = await request.post("/api/backend/v1/auth/otp/verify", {
+    data: { phone: `99${Date.now() % 1_000_000}`, otp_code: "0000" },
+  });
+  expect(res.ok()).toBeTruthy();
+  const { access_token } = await res.json();
+  await page.addInitScript(
+    (token) => localStorage.setItem("omnirate_access_token", token),
+    access_token,
+  );
+}
 
 // P1-17: a first slice of the 20-critical-flow suite the SOW calls for.
 // Extend this file (or add siblings under e2e/) as P2/P3 flows come online —
@@ -86,6 +100,7 @@ test("a user can add an entity from a category's own schema and land on its page
     },
   });
   expect(published.ok()).toBeTruthy();
+  await loginViaApi(page, request);
 
   await page.goto("/entities/new");
   await page.getByLabel("Категори").selectOption(slug);
@@ -125,4 +140,34 @@ test("the new-entity form refuses to submit without the required fields", async 
   const name = page.getByLabel(/^Нэр/);
   expect(await name.evaluate((el: HTMLInputElement) => el.validity.valueMissing)).toBe(true);
   expect(creations).toEqual([]);
+});
+
+test("adding an entity while logged out asks the user to log in and creates nothing", async ({
+  page,
+  request,
+}) => {
+  const slug = `e2e-entity-anon-${Date.now()}`;
+  const published = await request.post("/api/backend/v1/schemas", {
+    data: {
+      category_slug: slug,
+      version: 1,
+      json_schema: { type: "object" },
+      display_config: { sections: [] },
+    },
+  });
+  expect(published.ok()).toBeTruthy();
+
+  await page.goto("/entities/new");
+  await page.getByLabel("Категори").selectOption(slug);
+  await page.getByLabel(/^Нэр/).fill("Нэвтрээгүй хүний газар");
+  await page.getByLabel(/^Салбар/).fill("ulaanbaatar");
+  const [attempt] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.request().method() === "POST" && r.url().includes("/v1/entities"),
+    ),
+    page.getByRole("button", { name: "Нэмэх" }).click(),
+  ]);
+
+  expect(attempt.status()).toBe(401);
+  await expect(page.getByRole("link", { name: "Нэвтрэх" })).toBeVisible();
 });

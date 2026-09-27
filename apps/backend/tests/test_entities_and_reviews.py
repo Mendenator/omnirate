@@ -1,7 +1,8 @@
 import uuid
 from unittest.mock import AsyncMock
 
-from app.domain.models import Review, User
+from app.core.deps import get_current_user
+from app.domain.models import Entity, Review, User
 from app.main import app
 
 RESTORAN_SCHEMA = {"type": "object", "properties": {"cuisine": {"type": "string"}}}
@@ -190,3 +191,36 @@ async def test_creating_an_entity_enqueues_a_reindex_job(client):
         del app.state.arq_pool
 
     arq_pool.enqueue_job.assert_awaited_once_with("reindex_entity", entity["id"])
+
+
+_ENTITY_BODY = {
+    "branch_slug": "hool-zoog",
+    "category_slug": "restoran",
+    "schema_version": 1,
+    "name": "Нэргүй",
+    "attributes": {},
+}
+
+
+async def test_creating_an_entity_requires_a_login(client):
+    await _publish_schema(client)
+    app.dependency_overrides.pop(get_current_user)  # the fixture logs everyone in; undo that
+
+    no_header = await client.post("/api/v1/entities", json=_ENTITY_BODY)
+    bad_token = await client.post(
+        "/api/v1/entities", json=_ENTITY_BODY, headers={"Authorization": "Bearer not-a-real-jwt"}
+    )
+
+    assert no_header.status_code == 401
+    assert bad_token.status_code == 401
+
+
+async def test_an_entity_records_who_created_it_without_exposing_it(client, db_session):
+    await _publish_schema(client)
+
+    entity = await _create_entity(client)
+
+    assert "created_by" not in entity
+    row = await db_session.get(Entity, uuid.UUID(entity["id"]))
+    assert row is not None
+    assert row.created_by == client.fake_user.user_id
