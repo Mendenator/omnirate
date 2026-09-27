@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-09-27
+
 ### Security
 
 - `POST /api/v1/auth/otp/verify` now returns 404 unless `OMNIRATE_ENV=dev`.
