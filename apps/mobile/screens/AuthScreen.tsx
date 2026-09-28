@@ -11,7 +11,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Auth">;
 // L1 (OTP) path — always available. The ДАН (L2+) button below is the
 // preferred path once ДАН OAuth is wired into expo-auth-session; until then
 // this screen demonstrates the fallback the SOW §7 risk table calls for.
-export default function AuthScreen({ navigation }: Props) {
+export default function AuthScreen({ navigation, route }: Props) {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export default function AuthScreen({ navigation }: Props) {
     try {
       const { access_token } = await verifyOtp(phone, otp);
       await setToken("omnirate_access_token", access_token);
-      navigation.replace("Home");
+      navigation.replace(route.params?.next ?? "Home");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Нэвтрэхэд алдаа гарлаа");
     }

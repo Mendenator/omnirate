@@ -8,6 +8,27 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Added
+
+- Mobile create-entity screen (`NewEntityScreen`), reachable from the home
+  screen: pick a category, fill in the entity's fields plus the category's
+  own attributes (rendered from its published JSON Schema — text/number
+  inputs and a switch for booleans, no rjsf-equivalent exists on mobile
+  yet). Uses `GET /api/v1/schemas` and `POST /api/v1/entities`, the same
+  endpoints the web create-entity page uses. On a 401 (no login, or an
+  expired token) it sends the user to the login screen and back, via a new
+  `next` param on `Auth` — mirroring the web login page's `?next=`.
+
+### Known limitations
+
+- `apps/mobile` has no CI job at all (not even a type-check), so this went
+  through `tsc --noEmit` and `expo-doctor` locally but couldn't be run in
+  a simulator or browser here: `expo start --web` fails to bundle
+  `expo/AppEntry.js` itself on `ERR_PACKAGE_PATH_NOT_EXPORTED` for
+  `react-native/rn-get-polyfills`, a pre-existing version-skew issue
+  (`expo-doctor` shows `react-native` 0.87.1 installed against SDK 57's
+  expected 0.86.3) unrelated to this change.
+
 ## [0.5.0] - 2026-09-28
 
 ### Changed

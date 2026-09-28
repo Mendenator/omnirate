@@ -3,12 +3,16 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import AuthScreen from "./screens/AuthScreen";
 import HomeScreen from "./screens/HomeScreen";
+import NewEntityScreen from "./screens/NewEntityScreen";
 import QrScannerScreen from "./screens/QrScannerScreen";
 import ReviewScreen from "./screens/ReviewScreen";
 
 export type RootStackParamList = {
-  Auth: undefined;
+  // `next`: where to land after a successful login — defaults to Home.
+  // NewEntityScreen sends users here (and back) when POST /entities 401s.
+  Auth: { next?: keyof RootStackParamList } | undefined;
   Home: undefined;
+  NewEntity: undefined;
   Review: { entityId: string };
   QrScanner: { reviewId: string };
 };
@@ -25,6 +29,7 @@ export default function App() {
       <Stack.Navigator id={undefined} initialRouteName="Auth">
         <Stack.Screen name="Auth" component={AuthScreen} options={{ title: "Нэвтрэх" }} />
         <Stack.Screen name="Home" component={HomeScreen} options={{ title: "OmniRate" }} />
+        <Stack.Screen name="NewEntity" component={NewEntityScreen} options={{ title: "Шинэ газар нэмэх" }} />
         <Stack.Screen name="Review" component={ReviewScreen} options={{ title: "Үнэлгээ бичих" }} />
         <Stack.Screen name="QrScanner" component={QrScannerScreen} options={{ title: "e-barimt скан" }} />
       </Stack.Navigator>
