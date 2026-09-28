@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-28
+
 ### Added
 
 - Mobile create-entity screen (`NewEntityScreen`), reachable from the home

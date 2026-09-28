@@ -2,7 +2,7 @@
   "expo": {
     "name": "OmniRate",
     "slug": "omnirate-mobile",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "platforms": ["ios", "android"],
