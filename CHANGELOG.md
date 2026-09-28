@@ -8,6 +8,20 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Fixed
+
+- Metro couldn't bundle `apps/mobile` for *any* platform (not just web):
+  `react-native@0.87.1` no longer ships `rn-get-polyfills.js` at all (not
+  just missing from its `exports` map — the file is gone), but
+  `@expo/metro-config` (built for this project's Expo SDK 57, which expects
+  `react-native@0.86.3`) requires it directly at bundle time. Every bundle
+  request failed with `Cannot find module '...rn-get-polyfills'`, so the
+  app could not run at all via `expo start`, in Expo Go or otherwise.
+  `react-native` and `react-native-web` are now pinned to the versions
+  `expo install` resolves for SDK 57 (`0.86.3` / `^0.21.2`). Verified by
+  fetching the actual Android and iOS bundles Expo Go requests and
+  confirming both now return real JS instead of an error.
+
 ## [0.6.0] - 2026-09-28
 
 ### Added
