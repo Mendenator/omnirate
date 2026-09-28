@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-28
+
 ### Changed
 
 - `POST /api/v1/entities` now requires a login (bearer token) and records who
