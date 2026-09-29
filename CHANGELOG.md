@@ -8,6 +8,16 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+### Added
+
+- CI now has a `mobile` job: install, `tsc --noEmit`, `expo-doctor`
+  (informational only), and — the real test — `expo export` for both
+  Android and iOS, which actually runs Metro's bundling step. Nothing in
+  `apps/mobile` was checked in CI before this; the `react-native`/
+  `react-native-web` mismatch fixed in v0.6.1 broke bundling for every
+  platform while `npm ci` and `tsc` both stayed green, so those two alone
+  would not have caught it — only actually bundling does.
+
 ## [0.6.1] - 2026-09-29
 
 ### Fixed

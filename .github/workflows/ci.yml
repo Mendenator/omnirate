@@ -240,3 +240,48 @@ jobs:
             /tmp/web.log
             apps/web/playwright-report/
           retention-days: 7
+
+  # No simulator/device here, so this can't run the app — but `expo export`
+  # runs the exact Metro bundling step that "run the app" depends on, for
+  # both native platforms. This is deliberately a *real* regression test:
+  # react-native@0.87.1 installed fine (npm ci succeeded, tsc passed) but
+  # broke Metro bundling for every platform (it no longer ships
+  # rn-get-polyfills.js, which @expo/metro-config requires directly) — only
+  # actually bundling would have caught that before it reached a phone.
+  mobile:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      # Informational only (see the SDK-mismatch versions it's currently
+      # flagging in package.json) — it catches drift the export step below
+      # can't (e.g. a native module needing a config-plugin rebuild), but a
+      # package being one patch/minor behind Expo's suggestion isn't
+      # necessarily broken, so it doesn't fail the job on its own.
+      - name: Check Expo SDK compatibility
+        continue-on-error: true
+        run: npx expo-doctor
+
+      - name: Bundle for Android (the actual Metro regression test)
+        run: npx expo export --platform android --output-dir /tmp/export-android
+
+      - name: Bundle for iOS (the actual Metro regression test)
+        run: npx expo export --platform ios --output-dir /tmp/export-ios
