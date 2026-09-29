@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-09-29
+
 ### Added
 
 - CI now has a `mobile` job: install, `tsc --noEmit`, `expo-doctor`
