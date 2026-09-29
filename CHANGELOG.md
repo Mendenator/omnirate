@@ -8,6 +8,8 @@ see [`docs/PROGRESS.md`](./docs/PROGRESS.md).
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-09-29
+
 ### Fixed
 
 - Metro couldn't bundle `apps/mobile` for *any* platform (not just web):
